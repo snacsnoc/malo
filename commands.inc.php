@@ -309,10 +309,6 @@ if (false == in_array($nickc[1], $ban_list)) {
         case ".adverb":
             fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1]: " . readLine("adverbs.txt", rand(1, count(file("adverbs.txt")))) . " \r\n");
             break;
-        //google calculator
-        case ".calc":
-            fputs($socket, "PRIVMSG " . $config['chan'] . " :rezultat: " . GoogleCalc($args) . "\r\n");
-            break;
 
         case ".poke":
             $args = substr($args, 0, -3);
@@ -384,6 +380,7 @@ if (false == in_array($nickc[1], $ban_list)) {
 
 
                         break;
+
                     //This works so don't fuck with it
                     //Write a new memo
                     case is_numeric($args) == FALSE && $args != "r" && $args != "showall":
