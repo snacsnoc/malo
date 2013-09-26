@@ -78,24 +78,7 @@ function convert($size) {
     return @round($size / pow(1024, ($i = floor(log($size, 1024)))), 2) . ' ' . $unit[$i];
 }
 
-function GoogleCalc($query) {
-
-    if (!empty($query)) {
-        $query = substr($query, 0, -3);
-        $google_url = "https://www.google.com/search?q=" . urlencode($query);
-        $page_contents = file_get_contents($google_url);
-
-        preg_match('/<h2 class="r" dir="ltr" style="font-size:138%">(.*?)<\/h2>/', $page_contents, $calc_matches);
-
-        if (!$calc_matches['1']) {
-            return 'Your input could not be processed..';
-        } else {
-            return str_replace(array("Â", "<font size=-2> </font>", " &#215; 10", "?", "</sup>", "�"), "", utf8_decode($calc_matches['1']));
-        }
-    }
-}
-
-#http://www.bumpershine.com/making-short-wordpress-urls-with-bit-ly-and-php
+// http://www.bumpershine.com/making-short-wordpress-urls-with-bit-ly-and-php
 
 function make_bitly_url($url, $login, $appkey, $format = 'xml', $history = 1) {
 //create the URL
@@ -294,8 +277,9 @@ function readFeeds($feed) {
  * @return    string    The line that is read
  *
  */
+
 function readLine($file, $line_num, $delimiter = "\n") {
-    #     * * set the counter to one ** */
+    /*     * * set the counter to one ** */
     $i = 1;
 
     #     * * open the file for reading ** 
@@ -310,55 +294,16 @@ function readLine($file, $line_num, $delimiter = "\n") {
             #            * * return the line that is currently in the buffer ** */
             return $buffer;
         }
-        #         * * increment the line counter ** */
+        /*         * * increment the line counter ** */
         $i++;
         /*         * * clear the buffer ** */
         $buffer = '';
     }
+
+    fclose($fp);
     return false;
 }
 
-function google($word) {
-    global $settings;
-    $word = urlencode($word);
-    $handle = fopen("http://www.google.com/sms/demo?hl=en&country=US&q={$word}", "rb");
-    $stop = false;
-    $contents = fread($handle, 8192);
-
-    preg_match("/var message1 \= \'(.*?)\'\;/", $contents, $match);
-    $result = str_replace(array("<br />", "<br>", "(1/2)", "(1/3)", "(1/1)", "Glossary:"), " ", stripslashes($match[1]));
-
-    preg_match("/var message2 \= \'(.*?)\'\;/", $contents, $match);
-    $result .= str_replace(array("<br />", "<br>", "(2/2)", "(2/3)"), " ", stripslashes($match[1]));
-
-    preg_match("/var message3 \= \'(.*?)\'\;/", $contents, $match);
-    $result .= str_replace(array("<br />", "<br>", "(3/3)"), " ", stripslashes($match[1]));
-    fclose($handle);
-
-    $result = str_replace(array("For HELP on Google SMS, please reply with 'help' or go to http://sms.google.com.", "SCORE", "NCAAB", "NCAAF"), array('', $settings['trigger'] . "score", $settings['trigger'] . "ncaab", $settings['trigger'] . "ncaaf"), $result);
-
-    $result = str_replace(array("Looking for stock quotes? Enter a SINGLE stock ticker symbol or the word 'stock' followed by a less obvious ticker name (ex: GOOG, stock DUCK).", "For HELP on Google SMS, please reply with 'help'."), '', $result);
-
-    $result = explode("Tip:", $result);
-    $result = $result[0];
-
-    if (strstr($result, "Web: *")) {
-        googlesearch($word);
-        return;
-    }
-
-    if (strstr($result, "did not return any product results.")) {
-        googlesearch($word);
-        return;
-    }
-
-    if (preg_match("/Sorry\, \'(.*?)\' did not return any results./", $result, $regml)) {
-        googlesearch($regml[1]);
-        return;
-    }
-
-    return $result;
-}
 
 function validateURL($url) {
     $pattern = '/^(([\w]+:)?\/\/)?(([\d\w]|%[a-fA-f\d]{2,2})+(:([\d\w]|%[a-fA-f\d]{2,2})+)?@)?([\d\w][-\d\w]{0,253}[\d\w]\.)+[\w]{2,4}(:[\d]+)?(\/([-+_~.\d\w]|%[a-fA-f\d]{2,2})*)*(\?(&amp;?([-+_~.\d\w]|%[a-fA-f\d]{2,2})=?)*)?(#([-+_~.\d\w]|%[a-fA-f\d]{2,2})*)?$/';
@@ -460,6 +405,7 @@ function topmovies() {
     return $m;
 }
 
+//This doesn't work very well
 function newegg() {
     $objDOM = new DOMDocument();
     $objDOM->load("http://www.newegg.com/Product/RSS.aspx?Submit=RSSDailyDeals");
@@ -509,24 +455,6 @@ function Acronyms($query) {
         return substr($result1, 3);
         if ($limit2 > 5) {
             return substr($result2, 3);
-        }
-    }
-}
-
-function wolframCalc($query) {
-    if (!empty($query)) {
-
-        $url = "http://www.wolframalpha.com/input/?i=" . $query;
-        print_r($query);
-        print_r(preg_match('/<img height=20"width=491" src="[^"]*" id="[^"]*" alt="(.*)"/isU', file_get_contents($url), $matches));
-
-        # print_r( preg_match('/<ul class="h"><li class="first">(.*?)<\/</li></ul>/', file_get_contents($url), $matches));
-        print_r($matches);
-        return print_r($matches);
-        if (!$matches['1']) {
-            return 'Your input could not be processed..';
-        } else {
-            return str_replace(array("Â", "<font size=-2> </font>", " &#215; 10", "<sup>", "</sup>"), array("", "", "e", "^", ""), $matches['1']);
         }
     }
 }
@@ -599,151 +527,6 @@ function getWOEID($loc) {
     return false;
 }
 
-/* Google Translator. (Language Check) */
-
-function lang_check($lang, $languages) {
-
-    /* Convert to lower case and trim. */
-    $lang = trim(strtolower($lang));
-
-    /* Check to see if the language is in the array. */
-    if (array_key_exists($lang, $languages)) {
-        return $lang;
-    }
-    foreach ($languages as $this_lang => $this_init) {
-        if ($lang == $this_init) {
-            return $this_lang;
-        }
-    }
-
-    /* Check for abbreviations and mis-spellings. */
-    switch ($lang) {
-        case "sq":
-        case "alb":
-        case "alban":
-        case "albanien":
-        case "albanese":
-            return "albanian";
-            break;
-        case "cs":
-        case "check":
-        case "chezc":
-        case "cz":
-            return "czech";
-            break;
-        case "da":
-        case "dane":
-        case "dan":
-            return "danish";
-            break;
-        case "nl":
-        case "ned":
-        case "nederlands":
-            return "dutch";
-            break;
-        case "en":
-        case "eng":
-        case "england":
-        case "brit":
-        case "british":
-            return "english";
-            break;
-        case "et":
-        case "est":
-        case "estonien":
-            return "estonian";
-            break;
-        case "tl":
-        case "fil":
-        case "filapino":
-        case "philipino":
-            return "filipino";
-            break;
-        case "fi":
-        case "fin":
-        case "finn":
-        case "finish":
-            return "finnish";
-            break;
-        case "fr":
-        case "fra":
-        case "fren":
-        case "fre":
-        case "francais":
-            return "french";
-            break;
-        case "gl":
-        case "gal":
-        case "galicien":
-            return "galician";
-            break;
-        case "de":
-        case "germ":
-        case "deutsche":
-        case "deutch":
-        case "ger":
-            return "german";
-            break;
-        case "el":
-        case "grek":
-        case "greece":
-        case "grk":
-        case "gre":
-            return "greek";
-            break;
-        case "hu":
-        case "hun":
-        case "hungary":
-        case "hungarien":
-            return "hungarian";
-            break;
-        case "in":
-        case "ind":
-        case "indonesien":
-            return "indonesian";
-            break;
-        case "it":
-        case "ita":
-        case "italy":
-            return "italian";
-            break;
-        case "ja":
-        case "jap":
-        case "japan":
-        case "japenese":
-            return "japanese";
-            break;
-        case "lv":
-        case "lat":
-        case "latvien":
-            return "latvian";
-            break;
-        case "pt":
-        case "por":
-        case "port":
-        case "portugal":
-        case "portugese":
-            return "portuguese";
-            break;
-        case "es":
-        case "sp":
-        case "spa":
-        case "spain":
-        case "spannish":
-            return "spanish";
-            break;
-        case "ru":
-        case "rus":
-        case "russia":
-        case "russien":
-            return "russian";
-            break;
-    }
-
-    /* Return FALSE if we havent found a match. */
-    return FALSE;
-}
-
 /* format the result */
 
 //function contents($parser, $data) {
@@ -774,61 +557,7 @@ function get_data($url) {
     return $xml;
 }
 
-/* Google Translator. (Main) */
 
-function translate($from, $to, $TextToTranslate) {
-
-    // Define languages and their initials.
-    $languages = array(
-        "albanian" => "sq",
-        "czech" => "cs",
-        "danish" => "da",
-        "dutch" => "nl",
-        "english" => "en",
-        "estonian" => "et",
-        "filipino" => "tl",
-        "finnish" => "fi",
-        "french" => "fr",
-        "galician" => "gl",
-        "german" => "de",
-        "greek" => "el",
-        "hungarian" => "hu",
-        "indonesian" => "id",
-        "italian" => "it",
-        "latvian" => "lv",
-        "japanese" => "ja",
-        "portuguese" => "pt",
-        "spanish" => "es",
-        "russian" => "ru",
-    );
-    #
-    // Parse for alternative spellings.
-    #$to = lang_check($to, $languages);
-    #$from = lang_check($from, $languages);
-    // Check to and from languages.
-    #if ($to == "" || $from == "" || !array_key_exists($to, $languages)
-    #|| !array_key_exists($from, $languages) || $to === FALSE || $from === FALSE) {
-    #	return FALSE;
-    #	}
-#http://translate.google.com/#en|fr|hello%0D%0A
-    #$url = "http://www.google.com/translate_t?text=".urlencode($TextToTranslate)."&langpair=".$languages[$from]."|".$languages[$to]."#";
-    $url = "http://www.translate.google.com/#" . $languages[$from] . "|" . $languages[$to] . "|" . urlencode($TextToTranslate);
-
-    //http://translate.google.com/#en|fr|hello
-    $contents = @file_get_contents($url);
-    if ($contents) {
-        preg_match('/<span class="hps" title="(.*?)">/', $contents, $match);
-        $result = ' (' . ucfirst($from) . ' to ' . ucfirst($to) . '): ' . trim(preg_replace('/[\r\n\t ]+/', ' ', $match['1']));
-        #PRIVMSG($chan, $result);
-        #fputs($socket, "PRIVMSG ".$channel." :Result: $result\n");
-        return($result);
-        # fputs($socket, "PRIVMSG ".$config['chan']." :$result\n");
-    } else {
-        #PRIVMSG($chan, $http_response_header[0]);
-        #fputs($socket, "PRIVMSG ".$channel." :Result:".$http_response_header[0]."\n");
-        fputs($socket, "PRIVMSG " . $config['chan'] . " :$http_response_header[0]\n");
-    }
-}
 
 function weatherInfo($countryId = "SWXX0031", $unit = "c") {
     $url = "http://weather.yahooapis.com/forecastrss?w=$countryId&u=$unit";
