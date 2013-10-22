@@ -2,7 +2,7 @@
 
 //Goddamnit this code is terrible
 //....but it works
-require_once '../reddit-api-client/Reddit.php';
+require_once './reddit-api-client/Reddit.php';
 
 use \RedditApiClient\Reddit;
 
@@ -295,19 +295,19 @@ if (false == in_array($nickc[1], $ban_list)) {
             break;
         //random noun
         case ".noun":
-            fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1]: " . readLine("nouns_a.txt", rand(1, count(file("nouns_a.txt")))) . " \r\n");
+            fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1]: " . lineread("nouns_a.txt", rand(1, count(file("nouns_a.txt")))) . " \r\n");
             break;
         //random verb
         case ".verb":
-            fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1]: " . readLine("verbs.txt", rand(1, count(file("verbs.txt")))) . " \r\n");
+            fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1]: " . lineread("verbs.txt", rand(1, count(file("verbs.txt")))) . " \r\n");
             break;
         //random adjective
         case ".adjective":
-            fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1]: " . readLine("adjectives.txt", rand(1, count(file("adjectives.txt")))) . " \r\n");
+            fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1]: " . lineread("adjectives.txt", rand(1, count(file("adjectives.txt")))) . " \r\n");
             break;
         //random adverb
         case ".adverb":
-            fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1]: " . readLine("adverbs.txt", rand(1, count(file("adverbs.txt")))) . " \r\n");
+            fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1]: " . lineread("adverbs.txt", rand(1, count(file("adverbs.txt")))) . " \r\n");
             break;
 
         case ".poke":
@@ -376,7 +376,7 @@ if (false == in_array($nickc[1], $ban_list)) {
                     //Get a random line
                     case 'r':
                         $random = rand(1, count(file("memo.txt")));
-                        fputs($socket, "PRIVMSG " . $config['chan'] . " :[line $random]" . readLine("memo.txt", $random) . "\r\n");
+                        fputs($socket, "PRIVMSG " . $config['chan'] . " :[line $random]" . lineread("memo.txt", $random) . "\r\n");
 
 
                         break;
@@ -400,11 +400,11 @@ if (false == in_array($nickc[1], $ban_list)) {
 
                     //Get a specific line
                     case is_numeric($args):
-                        if (!readLine("memo.txt", $args) == NULL) {
+                        if (!lineread("memo.txt", $args) == NULL) {
 
                             // $line_number = substr_replace($args, 0, -4);
 
-                            fputs($socket, "PRIVMSG " . $config['chan'] . " :" . readLine("memo.txt", $args) . "\r\n");
+                            fputs($socket, "PRIVMSG " . $config['chan'] . " :" . lineread("memo.txt", $args) . "\r\n");
                         }
 
                         break;

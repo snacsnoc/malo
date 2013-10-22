@@ -99,6 +99,7 @@ function make_bitly_url($url, $login, $appkey, $format = 'xml', $history = 1) {
     }
 }
 
+//This is old
 function linkify($t) {
     $t = ereg_replace("[[:alpha:]]+://[^<>[:space:]]+[[:alnum:]/]", "<a target=\"_blank\" href=\"\\0\">\\0</a>", $t);
     return $t;
@@ -249,24 +250,6 @@ function get_web_page($url) {
     return $header;
 }
 
-function readFeeds($feed) {
-    $fh = fopen($feed, 'r');
-// open file for reading
-
-    $xp = xml_parser_create();
-// Create an XML parser resource
-
-    xml_set_element_handler($xp, "startElement", "endElement");
-// defines which functions to call when element started/ended
-    xml_set_character_data_handler($xp, "characterDataHandler");
-
-    while ($data = fread($fh, 4096)) {
-        if (!xml_parse($xp, $data)) {
-            return 'Error in the feed';
-        }
-    }
-}
-
 /**
  * http://www.phpro.org/examples/Read-Line-From-File.html
  * Read a line number from a file
@@ -278,25 +261,25 @@ function readFeeds($feed) {
  *
  */
 
-function readLine($file, $line_num, $delimiter = "\n") {
-    /*     * * set the counter to one ** */
+function lineread($file, $line_num, $delimiter = "\n") {
+    // set the counter to one 
     $i = 1;
 
-    #     * * open the file for reading ** 
+    // open the file for reading 
     $fp = fopen($file, 'r');
 
-    #     * * loop over the file pointer ** */
+    // loop over the file pointer 
     while (!feof($fp)) {
-        #         * * read the line into a buffer ** */
+       // read the line into a buffer 
         $buffer = stream_get_line($fp, 1024, $delimiter);
-        #         * * if we are at the right line number ** */
+        // if we are at the right line number 
         if ($i == $line_num) {
-            #            * * return the line that is currently in the buffer ** */
+            #            return the line that is currently in the buffer
             return $buffer;
         }
-        /*         * * increment the line counter ** */
+        // increment the line counter 
         $i++;
-        /*         * * clear the buffer ** */
+        //clear the buffer 
         $buffer = '';
     }
 
