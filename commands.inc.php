@@ -12,7 +12,7 @@ $redis = new Redis();
 $redis->connect($config['redis_server']); // port 6379 by default
 //
 //Version 
-$version = "malo IRC bot version 1.81 by snacsnoc <easton@geekness.eu>";
+$version = "malo IRC bot version 1.84 by snacsnoc <easton@geekness.eu>";
 
 //Check if the user is in the banlist
 if (false == in_array($nickc[1], $ban_list)) {
@@ -781,7 +781,7 @@ if (false == in_array($nickc[1], $ban_list)) {
             break;
 
 
-
+        //jpeg to ascii
         case '.jp2a':
 
             //http://i.imgur.com/V0lB7nS.jpg
@@ -792,10 +792,8 @@ if (false == in_array($nickc[1], $ban_list)) {
             $image = file_get_contents($image_url);
 
             file_put_contents("/tmp/$token", $image);
-            echo $token;
             system('jp2a ' . "/tmp/$token --width=70 > /tmp/$token.txt");
             $lines = file("/tmp/$token.txt");
-            var_dump($lines);
             if ($false !== $lines) {
                 foreach ($lines as $line) {
                     fputs($socket, "PRIVMSG " . $config['chan'] . " :" . $line . "");
@@ -803,7 +801,7 @@ if (false == in_array($nickc[1], $ban_list)) {
             }
             break;
 
-//There needs to a better way to list commands
+        //There needs to a better way to list commands
         case ".help":
             fputs($socket, "PRIVMSG " . $nickc[1] . " :All commands are here: http://paste.gelat.in/26 \r\n");
 
