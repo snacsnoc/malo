@@ -12,7 +12,7 @@ $redis = new Redis();
 $redis->connect($config['redis_server']); // port 6379 by default
 //
 //Version 
-$version = "malo IRC bot version 1.84 by snacsnoc <easton@geekness.eu>";
+$version = "malo IRC bot version 1.85 by snacsnoc <easton@geekness.eu>";
 
 //Check if the user is in the banlist
 if (false == in_array($nickc[1], $ban_list)) {
@@ -349,7 +349,7 @@ if (false == in_array($nickc[1], $ban_list)) {
                         $data = array("name" => 'irc.devhax.com #fallout memo', "content" => $file_contents, "visible" => false);
                         $data_string = json_encode($data);
 
-                        $ch = curl_init('http://paste.gelat.in/api/create');
+                        $ch = curl_init('http://paste.gelat.in/api/v1/create');
                         curl_setopt($ch, CURLOPT_POST, true);
                         curl_setopt($ch, CURLOPT_POSTFIELDS, $data_string);
                         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
@@ -366,10 +366,7 @@ if (false == in_array($nickc[1], $ban_list)) {
 
                         $result = json_decode($curl, true);
 
-
                         fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1]: http://paste.gelat.in/" . $result['id'] . "\r\n");
-                        fclose($handle);
-
 
                         break;
 
