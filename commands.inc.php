@@ -12,7 +12,7 @@ $redis = new Redis();
 $redis->connect($config['redis_server']); // port 6379 by default
 //
 //Version 
-$version = "malo IRC bot version 1.85 by snacsnoc <easton@geekness.eu>";
+$version = "malo IRC bot version 1.86 by snacsnoc <easton@geekness.eu>";
 
 //Check if the user is in the banlist
 if (false == in_array($nickc[1], $ban_list)) {
@@ -890,6 +890,24 @@ if (false == in_array($nickc[1], $ban_list)) {
             }
 
             fputs($socket, "PRIVMSG " . $config['chan'] . " :https://github.com/snacsnoc/snacklinux Latest commit: $latest_commit\r\n");
+            break;
+
+        case ".shibabot":
+            $rss_feed = 'https://github.com/notori0us/shibabot/commits/master.atom';
+            $feed = simplexml_load_file($rss_feed);
+            if ($feed) {
+
+                $link = $feed->entry[0]->link->attributes();
+                $title = trim($feed->entry[0]->title);
+
+
+                $short_url = make_bitly_url($link['href'], $config['bitly_username'], $config['bitly_apikey'], 'xml');
+                $latest_commit = "$title [commit: $short_url]";
+            } else {
+                return false;
+            }
+
+            fputs($socket, "PRIVMSG " . $config['chan'] . " :https://github.com/notori0us/shibabot Latest commit: $latest_commit\r\n");
             break;
 
 
