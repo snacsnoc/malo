@@ -17,61 +17,6 @@ function c2f($celsius){
 function f2c($fahrenheit){
     return round(intval((trim($fahrenheit)) - 32) / 1.8, 2);
 }
-/**
- * Get weather conditions
- * @param type $woeid Yahoo Weather ID
- * @param type $unit Temperature unit, F or C
- * @return mixed 
- */
-function getWeather($woeid, $unit = 'F') {
-    if ($unit == 'F') {
-        $data = get_data("http://weather.yahooapis.com/forecastrss?w=" . $woeid . "&u=f");
-    }
-
-    /*
-      $weather = simplexml_load_string($data);
-      $channel_yweather = $weather->channel->children("http://xml.weather.yahoo.com/ns/rss/1.0");
-     */
-
-    $tomorrow = date('D', strtotime(' +1 day'));
-    #9885 cranbrook, 8775 calgary
-    #[^"] negated character class. matches to anything but "
-    $temperature = get_match('/<yweather:condition  text="[^"]*"  code="[0-9][0-9]?[0-9]?[0-9]?"  temp="(.*)"/isU', $data);
-
-    $cond = strtolower(get_match('/<yweather:condition  text="(.*)"/isU', $data));
-
-    //  $humidity = get_match('/<yweather:atmosphere humidity="(.*)"/isU', $data);
-    //    $pressure_unit = get_match('/<yweather:units temperature="[^"]*" distance="[^"]*" pressure="(.*)"/isU', $data);
-
-    preg_match('/<yweather:forecast day="' . $tomorrow . '" date="[^"]*" low="(.*)"/isU', $data, $forecast_low);
-
-    preg_match('/<yweather:forecast day="' . $tomorrow . '" date="[^"]*" low="[^"]*" high="(.*)"/isU', $data, $forecast_high);
-
-    preg_match('/<yweather:forecast day="' . $tomorrow . '" date="[^"]*" low="[^"]*" high="[^"]*" text="(.*)"/isU', $data, $forecast_cond);
-
-    $forecast_cond[1] = strtolower($forecast_cond[1]);
-
-    //Check if the forecast is set
-    if (!isset($forecast_low[1]) || !isset($forecast_high[1])) {
-        $forecast_low[1] = 'unknown ';
-        $forecast_high[1] = 'unknown ';
-    }
-
-    if ($cond == "unknown") {
-        $cond = "unable to find condition";
-    }
-    if (null == $temperature) {
-        return false;
-        // fputs($socket, "PRIVMSG " . $config['chan'] . " :unknown or unavailable, klokan\n");
-    } else {
-        return $weather = array('condition' => $cond,
-            'temperature' => $temperature,
-            'unit' => $unit,
-            'forecast_high' => $forecast_high[1],
-            'forecast_low' => $forecast_low[1],
-            'forecast_condition' => $forecast_cond[1]);
-    }
-}
 
 function convert($size) {
     $unit = array('b', 'kb', 'mb', 'gb', 'tb', 'pb');
@@ -99,11 +44,6 @@ function make_bitly_url($url, $login, $appkey, $format = 'xml', $history = 1) {
     }
 }
 
-//This is old
-function linkify($t) {
-    $t = ereg_replace("[[:alpha:]]+://[^<>[:space:]]+[[:alnum:]/]", "<a target=\"_blank\" href=\"\\0\">\\0</a>", $t);
-    return $t;
-}
 
 function bin2asc($in) {
     $out = '';
@@ -184,32 +124,6 @@ function parseVideoEntry($entry) {
     return $obj;
 }
 
-function get_web_page($url) {
-    $options = array(
-        CURLOPT_RETURNTRANSFER => true, // return web page
-        CURLOPT_HEADER => false, // don't return headers
-        CURLOPT_FOLLOWLOCATION => true, // follow redirects
-        CURLOPT_ENCODING => "", // handle all encodings
-        CURLOPT_USERAGENT => "malo-irc-bot", // who am i
-        CURLOPT_AUTOREFERER => true, // set referer on redirect
-        CURLOPT_CONNECTTIMEOUT => 120, // timeout on connect
-        CURLOPT_TIMEOUT => 120, // timeout on response
-        CURLOPT_MAXREDIRS => 10, // stop after 10 redirects
-    );
-
-    $ch = curl_init($url);
-    curl_setopt_array($ch, $options);
-    $content = curl_exec($ch);
-    $err = curl_errno($ch);
-    $errmsg = curl_error($ch);
-    $header = curl_getinfo($ch);
-    curl_close($ch);
-
-    $header['errno'] = $err;
-    $header['errmsg'] = $errmsg;
-    $header['content'] = $content;
-    return $header;
-}
 
 /**
  * http://www.phpro.org/examples/Read-Line-From-File.html
@@ -246,12 +160,6 @@ function lineread($file, $line_num, $delimiter = "\n") {
 
     fclose($fp);
     return false;
-}
-
-
-function validateURL($url) {
-    $pattern = '/^(([\w]+:)?\/\/)?(([\d\w]|%[a-fA-f\d]{2,2})+(:([\d\w]|%[a-fA-f\d]{2,2})+)?@)?([\d\w][-\d\w]{0,253}[\d\w]\.)+[\w]{2,4}(:[\d]+)?(\/([-+_~.\d\w]|%[a-fA-f\d]{2,2})*)*(\?(&amp;?([-+_~.\d\w]|%[a-fA-f\d]{2,2})=?)*)?(#([-+_~.\d\w]|%[a-fA-f\d]{2,2})*)?$/';
-    return preg_match($pattern, $url);
 }
 
 function phpHelp($fun) {
@@ -349,32 +257,6 @@ function topmovies() {
     return $m;
 }
 
-//This doesn't work very well
-function newegg() {
-    $objDOM = new DOMDocument();
-    $objDOM->load("http://www.newegg.com/Product/RSS.aspx?Submit=RSSDailyDeals");
-
-    $note = $objDOM->getElementsByTagName("item");
-    $i = 0;
-    foreach ($note as $value) {
-        $i++;
-        $t = $value->getElementsByTagName("title");
-        $item[$i]['title'] = $t->item(0)->nodeValue;
-
-        $l = $value->getElementsByTagName("link");
-        $item[$i]['link'] = $l->item(0)->nodeValue;
-
-        $l = $value->getElementsByTagName("description");
-        $item[$i]['description'] = strip_tags($l->item(0)->nodeValue);
-    }
-    $r = rand(1, $i);
-    $abc = preg_match("/(http\:\/\/www\.newegg\.com\/Product\/Product\.aspx\?Item=[A-Z0-9a-z]*?)\&.*?/", $item[$r]['link'], $l);
-    $l = $l[1];
-    if ($r) {
-        print_r(linkify($item[$r]['title'] . " " . $l . " " . str_replace(array('Add To Cart', "\t", "\n", "\r"), ' ', $item[$r]['description'])));
-        return linkify($item[$r]['title'] . " " . $l . " " . str_replace(array('Add To Cart', "\t", "\n", "\r"), ' ', $item[$r]['description']));
-    }
-}
 
 function Acronyms($query) {
     $query = ereg_replace('[[:space:]]+', '/', trim($query));
@@ -401,211 +283,6 @@ function Acronyms($query) {
             return substr($result2, 3);
         }
     }
-}
-
-/**
- * Get Yahoo Weather ID
- * @param string $loc Location
- * @param object $redis Redis instance
- * @return boolean 
- */
-function getWOEID($loc) {
-/*
-
-    //If we're using redis, get it
-    if (true == $redis) {
-        //If it exists, return
-        if (($woeid = $redis->get($loc))) {
-            return $woeid;
-        }else{
-            echo 'FAILURE!';
-        }
-        
-    } else {
-        /**
-         * You will need to manually make the subdirectory "cache"
-         * in order for this to work, but that's all.
-         */
-    /*
-        $cache = "./cache/$loc.txt";
-        if (file_exists($cache)) {
-            return file_get_contents($cache);
-        }
-    }
-    */
-//http://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20geo.places%20where%20text%3D%22Barrie%20CA%22&format=xml
-
-    $q = "select woeid from geo.places where text = '$loc' limit 1";
-    $ch = curl_init('http://query.yahooapis.com/v1/public/yql?format=json&q=' . urlencode($q));
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    $response = curl_exec($ch);
-    if ($response) {
-        try {
-            
-            $response = json_decode($response, true);
-            
-           var_dump($response['query']['results']['place']);
-           
-            $response = intval($response['query']['results']['place']['woeid']);
-            
-            if(null == $response){
-              $response =   intval($response['query']['results']['place'][0]['woeid']);
-            }
-            // this block is new, we store the response locally
-            if ($response) {
-                /*
-                //Cache via Redis
-                if (true == $redis) {
-                    $redis->set($loc, $response);
-                } else {
-                    file_put_contents($cache, $response);
-                }
-                 * 
-                 */
-                return $response;
-            }
-        } catch (Exception $ex) {
-            return false;
-        }
-    }
-    return false;
-}
-
-/* format the result */
-
-//function contents($parser, $data) {
-//    echo $data;
-//}
-
-function format_result($input) {
-    return strtolower(str_replace(array(' ', '(', ')'), array('-', '-', ''), $input));
-}
-
-/* helper:  does regex */
-
-function get_match($regex, $content) {
-    preg_match($regex, $content, $matches);
-    return $matches[1];
-}
-
-/* gets the xml data from Alexa */
-
-function get_data($url) {
-    $ch = curl_init();
-    $timeout = 5;
-    curl_setopt($ch, CURLOPT_URL, $url);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeout);
-    $xml = curl_exec($ch);
-    curl_close($ch);
-    return $xml;
-}
-
-
-
-function weatherInfo($countryId = "SWXX0031", $unit = "c") {
-    $url = "http://weather.yahooapis.com/forecastrss?w=$countryId&u=$unit";
-    //echo $url;
-
-    $ch = curl_init();
-    $timeout = 5;
-    curl_setopt($ch, CURLOPT_URL, $url);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeout);
-    $xml = curl_exec($ch);
-    curl_close($ch);
-
-
-    $string = simplexml_load_string($xml);
-    var_dump($string);
-    // Load RSS from yahoo-weather
-    //  $doc = domxml_xmltree($xml);
-    //echo $doc->yweather->node_name();
-    // Get all elements that have this namespace (the yweather-elements)
-    //   $elements = $doc->get_elements_by_tagname("*");
-    // Return array
-    $info = array();
-
-    // Get all yweather-elements and most of their attributes
-    foreach ($elements as $element) {
-        // Condition
-        if ($element->localName == "condition") {
-            $info['condition_text'] = $element->getAttribute("text");
-            $info['condition_code'] = $element->getAttribute("code");
-            $info['condition_temp'] = $element->getAttribute("temp");
-        }
-        // Location
-        if ($element->localName == "location") {
-            $info['location_city'] = $element->getAttribute("city");
-            $info['location_country'] = $element->getAttribute("country");
-        }
-        // Wind
-        if ($element->localName == "wind") {
-            $info['wind_chill'] = $element->getAttribute("chill");
-            $info['wind_direction'] = $element->getAttribute("direction");
-            $info['wind_speed'] = $element->getAttribute("speed");
-        }
-        // Atmosphere
-        if ($element->localName == "atmosphere") {
-            $info['atmosphere_humidity'] = $element->getAttribute("humidity");
-            $info['atmosphere_visibility'] = $element->getAttribute("visibility");
-            $info['atmosphere_pressure'] = $element->getAttribute("pressure");
-            $info['atmosphere_rising'] = $element->getAttribute("rising");
-        }
-        // Astronomy
-        if ($element->localName == "astronomy") {
-            $info['astronomy_sunrise'] = $element->getAttribute("sunrise");
-            $info['astronomy_sunset'] = $element->getAttribute("sunset");
-        }
-        // Check the RSS-feed if you want to extend this
-    }
-
-    // Create weather-css-class
-    $info['weather_css_class'] = strtolower(str_replace(array(" ", "(", ")"), array("-", "-", ""), $info['condition_text']));
-
-    // Create time css-class
-    // Get the lastBuildDate from the feed
-    // (updates every 30 mins and is sure to be local time)
-    // Fuck, this is gonna need a fix, it doesn't always update that often!
-    //$lbds = $doc->get_elements_by_tagname("lastBuildDate");
-    // Anyway not to loop this? I know there's only _one_ lastBuildDate-element
-    foreach ($lbds as $lbd) {
-        $localTime = $lbd->firstChild->nodeValue;
-    }
-
-    // Generate timestamp
-    $localTS = strtotime($localTime);
-
-    $info['last_build_date'] = $localTime;
-
-    // Get hour (only interested in what hour it is)
-    $hour = date("H", $localTS);
-
-    $info['hour_of_day'] = $hour;
-
-    // Night (00:00 -> 05:00)
-    if ($hour >= 0 and $hour < 6) {
-        $info['time_css_class'] = "night";
-    }
-    // Morning (06:00 -> 11:00)
-    elseif ($hour > 5 and $hour < 12) {
-        $info['time_css_class'] = "morning";
-    }
-    // Day (12:00 -> 17:00)
-    elseif ($hour > 11 and $hour < 18) {
-        $info['time_css_class'] = "day";
-    }
-    // Evening (18:00 -> 23:00)
-    elseif ($hour > 17 and $hour <= 23) {
-        $info['time_css_class'] = "evening";
-    }
-    // WTF
-    else {
-        $info['time_css_class'] = "wtf?!";
-    }
-    // Extend if you want to be more specific
-
-    return $info;
 }
 
 /**
