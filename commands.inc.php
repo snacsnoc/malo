@@ -90,20 +90,6 @@ if (false == in_array($nickc[1], $ban_list)) {
      */
 
 
-    if ($nickc[1] == "Ol_Geiser" && $ex[1] == "JOIN") {
-        fputs($socket, "PRIVMSG " . $config['chan'] . " :Ol_Geiser well why dont you cry about it, saddlebags \r\n");
-    }
-
-    if ($nickc[1] == "Dixie" && $ex[1] == "JOIN") {
-        fputs($socket, "PRIVMSG " . $config['chan'] . " :Dixie: tell people not to shoot dangerous amounts of heroin\n");
-    }
-    if ($nickc[1] == "SeVeNaD" && $ex[1] == "JOIN") {
-        fputs($socket, "PRIVMSG " . $config['chan'] . " :LETS TOUCH GENTS \r\n");
-    }
-
-
-
-
 //Standard period and exclaimation mark prefixed commands
     switch (strtolower(rtrim($rawcmd[1]))) {
 
@@ -415,9 +401,6 @@ if (false == in_array($nickc[1], $ban_list)) {
 
             break;
 
-        case ".time":
-            fputs($socket, "PRIVMSG " . $config['chan'] . " :" . date("F j, Y, G:i") . "\r\n");
-            break;
         case ".dicks":
             fputs($socket, "PRIVMSG " . $config['chan'] . " :" . " SVAJ PARTY TIME! WOOT WOOT!\r\n");
             break;
@@ -456,50 +439,17 @@ if (false == in_array($nickc[1], $ban_list)) {
             fputs($socket, "PRIVMSG " . $config['chan'] . " :http://i.imgur.com/Bb7WO.jpg\r\n");
             break;
 
-        case ".dermann":
-            $args = substr($args, 0, -3);
-            fputs($socket, "PRIVMSG " . $config['chan'] . " :" . chr(3) . chr(56) . chr(44) . chr(52) . "Better homosexual than be DerMann\r\n");
-
-            break;
-
-
-        case ".mad":
-            $mad_text[] = "is almost as mad as kobach";
-            $mad_text[] = "is quite perturbed";
-            $mad_text[] = "is $87 worth of mad";
-            $mad_text[] = "is a pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig";
-            $mad_text[] = "is filled up the butthole with mad";
-
-            $random = rand(0, count($mad_text) - 1);
-
-            //Send as first person or third person
-            if (null == $args || empty($args)) {
-                $user = $nickc[1];
-            } else {
-                $user = trim($args);
-            }
-
-            fputs($socket, "PRIVMSG " . $config['chan'] . " :" . chr(3) . chr(52) . chr(44) . chr(50) . chr(7) . $user . " " . $mad_text[$random] . "\r\n");
-
-            break;
-
 
         case '.back':
             //Reverse text
             $reverse_text = strrev(trim($args));
             fputs($socket, "PRIVMSG " . $config['chan'] . " :" . $reverse_text . "\r\n");
-
             break;
 
         case "!rimshot":
             fputs($socket, "PRIVMSG " . $config['chan'] . " :*ba-dum-tsh*\r\n");
             break;
-        case "!rimjob":
-            fputs($socket, "PRIVMSG " . $config['chan'] . " :*ba-dum-tush*\r\n");
-            break;
-        case ".smokin":
-            fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1] is smoking man sausage!\r\n");
-            break;
+
         case ".version":
             fputs($socket, "PRIVMSG " . $config['chan'] . " :version $version running on " . PHP_OS . " with PHP version " . phpversion() . "\r\n");
             break;
@@ -579,11 +529,6 @@ if (false == in_array($nickc[1], $ban_list)) {
             fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1]: " . phpHelp($args) . "\r\n");
             break;
 
-        //Grabs newest shit from Newegg's RSS
-        //This doesn't work very well
-        case ".new":
-            fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1]: " . newegg() . "\r\n");
-            break;
         //show current top movies
         case ".topmovies":
             fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1]: " . topmovies() . "\r\n");
@@ -606,17 +551,22 @@ if (false == in_array($nickc[1], $ban_list)) {
 
         //Converts Bitcoin to USD
         case ".btc2usd":
-            $last = mtgox_query('0/ticker.php');
-            $btc = $last['ticker']['last'];
-            $usd = trim($args) * $btc;
+            $mtgox_json = file_get_contents('https://data.mtgox.com/api/2/BTCUSD/money/ticker');
+            $btc = json_decode($mtgox_json,true);
+
+            $last = intval($btc['data']['last']['value']);
+            $usd = trim($args) * $last;
             fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1]: " . $usd . " USD\r\n");
 
             break;
+
         //Converts USD to Bitcoin
         case ".usd2btc":
-            $last = mtgox_query('0/ticker.php');
-            $last_btc = $last['ticker']['last'];
-            $btc = trim($args) / $last_btc;
+            $mtgox_json = file_get_contents('https://data.mtgox.com/api/2/BTCUSD/money/ticker');
+            $btc = json_decode($mtgox_json,true);
+
+            $last = intval($btc['data']['last']['value']);
+            $btc = trim($args) / $last;
             fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1]: " . $btc . " BTC\r\n");
 
             break;
@@ -665,10 +615,6 @@ if (false == in_array($nickc[1], $ban_list)) {
 
             switch (trim($weather_command[0])) {
 
-//                case null:
-//                    fputs($socket, "PRIVMSG " . $config['chan'] . " :use <zipcode> or <postal code, CA> or <city, state/prov>\r\n");
-//                    break;
-
                 case 'set':
                     //Get user's location
                     $address = rawurlencode($ex[5] . $ex[6]);
@@ -708,7 +654,7 @@ if (false == in_array($nickc[1], $ban_list)) {
 
                         fputs($socket, "PRIVMSG " . $config['chan'] . " :" . $nickc[1] . ": Currently " . substr($condition->getTemperature(),0,5) . "C (" . c2f($condition->getTemperature()) . "F) and " . $condition->getSummary() . ". Tomorrow low of " . substr($forecast_conditions[1]->getMinTemperature(), 0, 5) . "C (" . c2f($forecast_conditions[1]->getMinTemperature()) . "F), high of " . substr($forecast_conditions[1]->getMaxTemperature(), 0, 5) . "C (" . c2f($forecast_conditions[1]->getMaxTemperature()) . "F) and " . $forecast_conditions[1]->getSummary() . " \r\n");
                     } else {
-                        fputs($socket, "PRIVMSG " . $config['chan'] . " :you don't exist. set your location by using .w set <mylocation>\r\n");
+                        fputs($socket, "PRIVMSG " . $config['chan'] . " :You don't exist. Please set your location by using .w set <city, state/postal code/zipcode>\r\n");
                     }
 
                     break;
@@ -758,37 +704,15 @@ if (false == in_array($nickc[1], $ban_list)) {
             $link[] = "yes.";
             $link[] = "no.";
             $link[] = "try again later.";
-            $link[] = "come back when you have done more lines";
             $link[] = "sure.";
             $link[] = "perhaps.";
             $link[] = "maybe later.";
             $link[] = "never.";
-            $link[] = "You must construct additional pylons";
 
             $random = rand(0, count($link) - 1);
             fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1]: " . "$link[$random]\r\n");
             break;
 
-
-        //jpeg to ascii
-        case '.jp2a':
-
-            //http://i.imgur.com/V0lB7nS.jpg
-            $token = md5(time());
-
-            $image_url = trim($args);
-
-            $image = file_get_contents($image_url);
-
-            file_put_contents("/tmp/$token", $image);
-            system('jp2a ' . "/tmp/$token --width=70 > /tmp/$token.txt");
-            $lines = file("/tmp/$token.txt");
-            if ($false !== $lines) {
-                foreach ($lines as $line) {
-                    fputs($socket, "PRIVMSG " . $config['chan'] . " :" . $line . "");
-                }
-            }
-            break;
 
         //There needs to a better way to list commands
         case ".help":
@@ -846,9 +770,11 @@ if (false == in_array($nickc[1], $ban_list)) {
             fputs($socket, "MODE " . $config['chan'] . " +o Gr33n3gg \r\n");
             fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1]: dad knows about our secret!\r\n");
             break;
+
         case ".octodad":
             fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1]: meow\n");
             break;
+
         case ".linux":
             $rss_feed = 'https://github.com/torvalds/linux/commits/master.atom';
             $feed = simplexml_load_file($rss_feed);
@@ -866,6 +792,7 @@ if (false == in_array($nickc[1], $ban_list)) {
             fputs($socket, "PRIVMSG " . $config['chan'] . " :https://github.com/torvalds/linux Latest commit: $latest_commit\r\n");
 
             break;
+
         case ".snacklinux":
             $rss_feed = 'https://github.com/snacsnoc/snacklinux/commits/master.atom';
             $feed = simplexml_load_file($rss_feed);
