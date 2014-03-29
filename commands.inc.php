@@ -9,10 +9,15 @@ use \RedditApiClient\Reddit;
 require 'banlist.inc.php';
 
 $redis = new Redis();
-$redis->connect($config['redis_server']); // port 6379 by default
+
+//Check if we can connect to redis
+// port 6379 by default
+if(false == $redis->connect($config['redis_server'])){
+    die('Redis server down. Check configuration!');
+}
 //
 //Version 
-$version = "malo IRC bot version 1.86 by snacsnoc <easton@geekness.eu>";
+$version = "malo IRC bot version 1.87 by snacsnoc <easton@geekness.eu>";
 
 //Check if the user is in the banlist
 if (false == in_array($nickc[1], $ban_list)) {
@@ -31,7 +36,7 @@ if (false == in_array($nickc[1], $ban_list)) {
           http://www.youtube.com/watch?v=uQX4GuSXYLM
          */
         if (!empty($m['0'])) {
-            if (preg_match("#(\?|&)#si", $m['1'])) {
+            if (preg_match("#(\?|&)#si", $m[1][1])) {
                 parse_str($m['1'], $vars);
 
                 if (!empty($vars['v'])) {
@@ -46,7 +51,7 @@ if (false == in_array($nickc[1], $ban_list)) {
             if (strlen($youtube_video_key[0]) <= 14) {
 
                 if (get_url_contents('http://gdata.youtube.com/feeds/api/videos/' . $youtube_video_key[0]) == "Invalid id") {
-                    fputs($socket, "PRIVMSG " . $config['chan'] . " :skup, dupin \r\n");
+                    fputs($socket, "PRIVMSG " . $config['chan'] . " :Invalid YouTube video ID \r\n");
                 } else {
                     $feedURL = 'http://gdata.youtube.com/feeds/api/videos/' . $youtube_video_key[0];
                     $ulaz = simplexml_load_file($feedURL);
@@ -423,19 +428,6 @@ if (false == in_array($nickc[1], $ban_list)) {
             break;
 
 
-        case '.man':
-            $args = trim($args);
-            exec("man $args | col -b", $man);
-            if (true == $man) {
-
-                $title = str_replace("\t", "", $man[0]);
-                var_dump($man[10]);
-                fputs($socket, "PRIVMSG " . $config['chan'] . " :" . "$title\r\n");
-            }
-
-            break;
-
-
         case '.sonatia':
             /*
              * http://feeds.feedburner.com/DinnerTonight
@@ -633,28 +625,28 @@ if (false == in_array($nickc[1], $ban_list)) {
         case ".btc":
 
             //Query mtgox 
-            //TODO: This API is deprecated, use the new one: https://data.mtgox.com/api/2/BTCUSD/money/ticker
-            $btc = mtgox_query('0/ticker.php');
+            $mtgox_json = file_get_contents('https://data.mtgox.com/api/2/BTCUSD/money/ticker');
+            $btc = json_decode($mtgox_json,true);
 
             switch (trim($args)) {
 
                 case 'buy':
-                    fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1]: buy: " . $btc['ticker']['buy'] . "\r\n");
+                    fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1]: buy: " . $btc['data']['buy']['value'] . "\r\n");
                     break;
                 case 'last':
-                    fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1]: last: " . $btc['ticker']['last'] . "\r\n");
+                    fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1]: last: " . $btc['data']['last']['value'] . "\r\n");
                     break;
 
                 case 'sell':
-                    fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1]: sell: " . $btc['ticker']['sell'] . "\r\n");
+                    fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1]: sell: " . $btc['data']['sell']['value'] . "\r\n");
                     break;
 
                 case 'high':
-                    fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1]: high: " . $btc['ticker']['high'] . "\r\n");
+                    fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1]: high: " . $btc['data']['high']['value'] . "\r\n");
                     break;
 
                 case 'low':
-                    fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1]: low: " . $btc['ticker']['low'] . "\r\n");
+                    fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1]: low: " . $btc['data']['low']['value'] . "\r\n");
                     break;
 
 
