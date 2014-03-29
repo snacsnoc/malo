@@ -701,11 +701,10 @@ if (false == in_array($nickc[1], $ban_list)) {
             break;
 
 
-        //There needs to a better way to list commands
+        //There needs to a better way to list commands         
         case ".help":
-            fputs($socket, "PRIVMSG " . $nickc[1] . " :All commands are here: http://paste.gelat.in/26 \r\n");
-
-            break;
+            fputs($socket, "PRIVMSG " . $nickc[1] . " :All commands are here: http//paste.gelat.in/441 \r\n");
+        break;
 
         ##BOT/SYS COMMANDS##
         case ".uptime":
