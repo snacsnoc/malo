@@ -9,17 +9,17 @@ ini_set( 'display_errors', 'on' );
 $config = array(
      "server" => "irc.devhax.com",
      "chan" => "#fallout",
-     "port" => 6667,
+     "port" => 6697,
      'nick' => 'malo',
-     'admin' => '####',
-     'password' => "#####",
-     'email' => "############",
-     'reddit_username' => '######',
-     'reddit_password' => '######',
-     'bitly_username' => "######",
-     'bitly_apikey' => "#####",
-     'redis_server' => '#######',
-     'forecast.io_apikey' => "#######"
+     'admin' => '#',
+     'password' => "#",
+     'email' => "#",
+     'reddit_username' => '#',
+     'reddit_password' => '#',
+     'bitly_username' => "#",
+     'bitly_apikey' => "#",
+     'redis_server' => '#',
+     'forecast.io_apikey' => "#"
 );
 date_default_timezone_set('America/Edmonton');
 
@@ -29,7 +29,7 @@ require_once 'functions.inc.php';
 require_once 'forecast.io-php-api/lib/forecast.io.php';
 
 
-$socket = fsockopen($config['server'], $config['port']);
+$socket = fsockopen("ssl://".$config['server'], $config['port']);
 
 fputs($socket, "USER " . $config['nick'] . " moreau doctor :Something nice\n");
 
@@ -70,7 +70,7 @@ while (!feof($socket)){
          $ex = explode(' ', $data);
          $rawcmd = explode(':', $ex[3]);
 
-        $config['chan'] = $ex[2];
+         $config['chan'] = $ex[2];
          $nicka = explode('@', $ex[0]);
          $nickb = explode('!', $nicka[0]);
          $nickc = explode(':', $nickb[0]);
