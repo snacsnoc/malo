@@ -309,19 +309,17 @@ if (false == in_array($nickc[1], $ban_list)) {
         case ".mem":
             fputs($socket, "PRIVMSG " . $config['chan'] . " :" . convert(memory_get_usage(true)) . "\r\n");
             break;
-        case ".memp":
-            fputs($socket, "PRIVMSG " . $config['chan'] . " :peak: " . convert(memory_get_peak_usage(true)) . "\r\n");
-            break;
 
         case ".checkport":
             $args = explode(":", $args);
             fputs($socket, "PRIVMSG " . $config['chan'] . " :rezultat: " . Portscan($args[0], $args[1]) . "\r\n");
-
             break;
+
         //Looks up acronyms
         case ".acr":
             fputs($socket, "PRIVMSG " . $config['chan'] . " :" . Acronyms($args) . "\r\n");
             break;
+
         //memo
         case ".memo":
             $args = trim($args);
@@ -390,8 +388,6 @@ if (false == in_array($nickc[1], $ban_list)) {
                     case is_numeric($args):
                         if (!lineread("memo.txt", $args) == NULL) {
 
-                            // $line_number = substr_replace($args, 0, -4);
-
                             fputs($socket, "PRIVMSG " . $config['chan'] . " :" . lineread("memo.txt", $args) . "\r\n");
                         }
 
@@ -399,10 +395,6 @@ if (false == in_array($nickc[1], $ban_list)) {
                 }
             }
 
-            break;
-
-        case ".dicks":
-            fputs($socket, "PRIVMSG " . $config['chan'] . " :" . " SVAJ PARTY TIME! WOOT WOOT!\r\n");
             break;
 
         //colour ref: http://forum.egghelp.org/viewtopic.php?t=3867
@@ -551,10 +543,10 @@ if (false == in_array($nickc[1], $ban_list)) {
 
         //Converts Bitcoin to USD
         case ".btc2usd":
-            $mtgox_json = file_get_contents('https://data.mtgox.com/api/2/BTCUSD/money/ticker');
+            $mtgox_json = file_get_contents('https://api.bitcoinaverage.com/ticker/USD/');
             $btc = json_decode($mtgox_json,true);
 
-            $last = intval($btc['data']['last']['value']);
+            $last = intval($btc['last']);
             $usd = trim($args) * $last;
             fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1]: " . $usd . " USD\r\n");
 
@@ -562,10 +554,10 @@ if (false == in_array($nickc[1], $ban_list)) {
 
         //Converts USD to Bitcoin
         case ".usd2btc":
-            $mtgox_json = file_get_contents('https://data.mtgox.com/api/2/BTCUSD/money/ticker');
+            $mtgox_json = file_get_contents('https://api.bitcoinaverage.com/ticker/USD/');
             $btc = json_decode($mtgox_json,true);
 
-            $last = intval($btc['data']['last']['value']);
+            $last = intval($btc['last']);
             $btc = trim($args) / $last;
             fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1]: " . $btc . " BTC\r\n");
 
@@ -575,33 +567,28 @@ if (false == in_array($nickc[1], $ban_list)) {
         case ".btc":
 
             //Query mtgox 
-            $mtgox_json = file_get_contents('https://data.mtgox.com/api/2/BTCUSD/money/ticker');
+            $mtgox_json = file_get_contents('https://api.bitcoinaverage.com/ticker/USD/');
             $btc = json_decode($mtgox_json,true);
 
             switch (trim($args)) {
 
-                case 'buy':
-                    fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1]: buy: " . $btc['data']['buy']['value'] . "\r\n");
+                case 'bid':
+                    fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1]: buy: " . $btc['bid'] . "\r\n");
                     break;
                 case 'last':
-                    fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1]: last: " . $btc['data']['last']['value'] . "\r\n");
+                    fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1]: last: " . $btc['last'] . "\r\n");
                     break;
 
-                case 'sell':
-                    fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1]: sell: " . $btc['data']['sell']['value'] . "\r\n");
+                case 'ask':
+                    fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1]: sell: " . $btc['ask'] . "\r\n");
                     break;
 
-                case 'high':
-                    fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1]: high: " . $btc['data']['high']['value'] . "\r\n");
+                case 'avg':
+                    fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1]: high: " . $btc['24h_avg'] . "\r\n");
                     break;
-
-                case 'low':
-                    fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1]: low: " . $btc['data']['low']['value'] . "\r\n");
-                    break;
-
 
                 case null:
-                    fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1]:  use low, high, sell, buy or last\r\n");
+                    fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1]:  use bid, last, ask or avg\r\n");
                     break;
             }
 
