@@ -708,21 +708,23 @@ if (false == in_array($nickc[1], $ban_list)) {
 
         ##BOT/SYS COMMANDS##
         case ".uptime":
-            #  if ($ex[0] == $config['admin']) {
-            fputs($socket, "PRIVMSG " . $config['chan'] . " :" . exec('uptime') . "\r\n");
-            # }
+            if ($ex[0] == $config['admin']) {
+                fputs($socket, "PRIVMSG " . $config['chan'] . " :" . exec('uptime') . "\r\n");
+            }
             break;
 
         case ".free":
-            #  if ($ex[0] == $config['admin']) {
-            fputs($socket, "PRIVMSG " . $config['chan'] . " :" . exec('free -m | egrep Mem:') . "\r\n");
-            #  }
+            if ($ex[0] == $config['admin']) {
+                fputs($socket, "PRIVMSG " . $config['chan'] . " :" . exec('free -m | egrep Mem:') . "\r\n");
+            }
             break;
+
         case ".register":
             if ($ex[0] == $config['admin']) {
                 fputs($socket, "PRIVMSG NickServ : register " . $config['password'] . " " . $config['email'] . "\r\n");
             }
             break;
+
         case ".login":
             if ($ex[0] == $config['admin']) {
                 fputs($socket, "PRIVMSG NickServ : identify " . $config['password'] . "\r\n");
@@ -731,18 +733,19 @@ if (false == in_array($nickc[1], $ban_list)) {
 
         case ".join":
             //Somehow multi-channel works...
-            #if ($ex[0] == $config['admin']) {
-            $channel = trim($args);
-            fputs($socket, "JOIN $channel\r\n");
-            # }
+            if ($ex[0] == $config['admin']) {
+                $channel = trim($args);
+                fputs($socket, "JOIN $channel\r\n");
+            }
             break;
 
 
         case ".kick":
-            // if ($ex[0] == $config['admin']) {
-            fputs($socket, "KICK " . $config['chan'] . " $args\n");
-            // }
+            if ($ex[0] == $config['admin']) {
+            fputs($socket, "KICK " . $config['chan'] . " $args\r\n");
+            }
             break;
+
         case ".octouncle":
             fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1]: meat popsicle\r\n");
             break;
