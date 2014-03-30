@@ -573,22 +573,22 @@ if (false == in_array($nickc[1], $ban_list)) {
             switch (trim($args)) {
 
                 case 'bid':
-                    fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1]: buy: " . $btc['bid'] . "\r\n");
+                    fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1]: bid: " . $btc['bid'] . "\r\n");
                     break;
                 case 'last':
                     fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1]: last: " . $btc['last'] . "\r\n");
                     break;
 
                 case 'ask':
-                    fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1]: sell: " . $btc['ask'] . "\r\n");
+                    fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1]: ask: " . $btc['ask'] . "\r\n");
                     break;
 
                 case 'avg':
-                    fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1]: high: " . $btc['24h_avg'] . "\r\n");
+                    fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1]: avg: " . $btc['24h_avg'] . "\r\n");
                     break;
 
                 case null:
-                    fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1]:  use bid, last, ask or avg\r\n");
+                    fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1]:  use bid, last, ask or avg. Data via bitcoinaverage.com\r\n");
                     break;
             }
 
