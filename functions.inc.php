@@ -1,6 +1,6 @@
 <?php
 
-function Portscan($host, $port) {
+function checkport($host, $port) {
     $fp = @fsockopen($host, $port, $errno, $errstr, 4);
     if ($fp) {
         return "open";
@@ -24,7 +24,6 @@ function convert($size) {
 }
 
 // http://www.bumpershine.com/making-short-wordpress-urls-with-bit-ly-and-php
-
 function make_bitly_url($url, $login, $appkey, $format = 'xml', $history = 1) {
 //create the URL
     $bitly = 'http://api.bit.ly/v3/shorten?login=' . $login . '&apiKey=' . $appkey . '&uri=' . urlencode($url) .
@@ -60,7 +59,7 @@ function asc2bin($in) {
     }
     return $out;
 }
-
+//Thanks to http://www.ibm.com/developerworks/xml/library/x-youtubeapi/
 function parseVideoEntry($entry) {
     $obj = new stdClass;
 

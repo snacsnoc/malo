@@ -306,7 +306,11 @@ if (false == in_array($nickc[1], $ban_list)) {
 
         case ".checkport":
             $args = explode(":", $args);
-            fputs($socket, "PRIVMSG " . $config['chan'] . " :rezultat: " . Portscan($args[0], $args[1]) . "\r\n");
+            if(is_int($args[1])){
+                fputs($socket, "PRIVMSG " . $config['chan'] . " :Result: " . checkport($args[0], $args[1]) . "\r\n");
+            }else{
+                fputs($socket, "PRIVMSG " . $config['chan'] . " :Not valid port number!\r\n");
+            }
             break;
 
         //Looks up acronyms
