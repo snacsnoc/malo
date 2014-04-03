@@ -440,36 +440,6 @@ if (false == in_array($nickc[1], $ban_list)) {
             fputs($socket, "PRIVMSG " . $config['chan'] . " :version $version running on " . PHP_OS . " with PHP version " . phpversion() . "\r\n");
             break;
 
-        //IMDB search
-        case ".imdb":
-
-            //http://clickontyler.com/blog/2008/05/scraping-imdb-with-php/
-            $m = new MediaInfo();
-            $info = $m->getMovieInfo($args);
-
-            //replace null values with ?
-            if (null == $info['rating']):
-                $info['rating'] = '?';
-            endif;
-            if (null == $info['director']):
-                $info['director'] = '?';
-            endif;
-
-            if (null == $info['release_date']):
-                $info['release_date'] = '?';
-            endif;
-
-            if (null == $info['id']):
-                fputs($socket, "PRIVMSG " . $config['chan'] . " : no results, dupin \r\n");
-                break;
-
-            endif;
-
-            fputs($socket, "PRIVMSG " . $config['chan'] . " : title: [" . $info['title'] . "] rating: [" . $info['rating'] . "] director: [" . $info['director'] . "] release date: [" . $info['release_date'] . "] \r\n");
-
-            break;
-
-
         //md5
         case ".md5":
             fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1]: MD5 " . md5($args) . "\r\n");
