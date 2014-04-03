@@ -17,7 +17,7 @@ if(false == $redis->connect($config['redis_server'])){
 }
 //
 //Version 
-$version = "malo IRC bot version 1.87 by snacsnoc <easton@geekness.eu>";
+$version = "malo IRC bot version 1.88 by snacsnoc <easton@geekness.eu>";
 
 //Check if the user is in the banlist
 if (false == in_array($nickc[1], $ban_list)) {
