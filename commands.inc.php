@@ -333,6 +333,8 @@ if (false == in_array($nickc[1], $ban_list)) {
                         $file_contents = file_get_contents($filename);
 
                         //JSON POST to pate.gelat.in
+                        //See http://paste.gelat.in/api
+
                         $data = array("name" => 'irc.devhax.com #fallout memo', "content" => $file_contents, "visible" => false);
                         $data_string = json_encode($data);
 
@@ -714,24 +716,6 @@ if (false == in_array($nickc[1], $ban_list)) {
             }
             break;
 
-        case ".octouncle":
-            fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1]: meat popsicle\r\n");
-            break;
-
-        case ".octoaunt":
-            fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1]: don't make me tell mom\r\n");
-            break;
-
-        case ".octomom":
-            fputs($socket, "MODE " . $config['chan'] . " +o snacsnoc \r\n");
-            fputs($socket, "MODE " . $config['chan'] . " +o Gr33n3gg \r\n");
-            fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1]: dad knows about our secret!\r\n");
-            break;
-
-        case ".octodad":
-            fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1]: meow\n");
-            break;
-
         case ".linux":
             $rss_feed = 'https://github.com/torvalds/linux/commits/master.atom';
             $feed = simplexml_load_file($rss_feed);
@@ -784,19 +768,6 @@ if (false == in_array($nickc[1], $ban_list)) {
             }
 
             fputs($socket, "PRIVMSG " . $config['chan'] . " :https://github.com/notori0us/shibabot Latest commit: $latest_commit\r\n");
-            break;
-
-
-        case ".octobaby":
-            fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1]: feed me your soul\r\n");
-            break;
-
-        case ".octosister":
-            fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1]: lets commit incestuous incest\r\n");
-            break;
-
-        case ".octobrother":
-            fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1]: show me where the :V is at \r\n");
             break;
 
         //This doesn't work
