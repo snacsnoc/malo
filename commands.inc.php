@@ -115,26 +115,32 @@ if (false == in_array($nickc[1], $ban_list)) {
             $sxml = simplexml_load_file($feedURL);
             // get summary counts from opensearch: namespace
             $counts = $sxml->children('http://a9.com/-/spec/opensearchrss/1.0/');
-            if ($counts->totalResults == "0") {
+
+            if (0 == $counts->totalResults) {
                 fputs($socket, "PRIVMSG " . $config['chan'] . " : no results, dupin \r\n");
                 break;
             }
-            //   $total = $counts->totalResults;
-            //    $startOffset = $counts->startIndex;
-            //      $endOffset = ($startOffset - 1) + $counts->itemsPerPage;
-
 
             foreach ($sxml->entry as $ulaz) {
-                //yay, children!
+                //Search for the given term
                 $media = $ulaz->children('http://search.yahoo.com/mrss/');
 
                 $attrs = $media->group->player->attributes();
-                $gledati = $attrs['url'];
+
+                $youtube_url = explode("&", $attrs['url']);
 
                 // get <yt:duration> node for video length
                 $yt = $media->children('http://gdata.youtube.com/schemas/2007');
                 $attrs = $yt->duration->attributes();
-                $length = $attrs['seconds'];
+
+                $time = sprintf("%0.2f", $attrs['seconds'] / 60);
+
+
+                // get <yt:stats> node for viewer statistics
+                $yt = $ulaz->children('http://gdata.youtube.com/schemas/2007');
+                $viewer_stats = $yt->statistics->attributes();
+
+                $view_count = $viewer_stats['viewCount'];
 
                 // get <gd:rating> node for video ratings
                 $gd = $ulaz->children('http://schemas.google.com/g/2005');
@@ -144,22 +150,9 @@ if (false == in_array($nickc[1], $ban_list)) {
                 } else {
                     $rating = 0;
                 }
-                // get <yt:stats> node for viewer statistics
-                $yt = $ulaz->children('http://gdata.youtube.com/schemas/2007');
-                $attrs = $yt->statistics->attributes();
 
 
-                // $viewCount = decbin($attrs['viewCount']);
-                //  $rating = decoct($rating);
-                // $time = base_convert(sprintf("%0.2f", $length / 60), 10, 16);
-                //  $time = substr_replace($time, ".", 1, 0);
-                $viewCount = $attrs['viewCount'];
-
-                $time = sprintf("%0.2f", $length / 60);
-
-                $gledati = explode("&", $gledati);
-
-                fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1]: " . $gledati[0] . "  [" . $media->group->title . "] [" . $time . " min] [" . $rating . " user rating] [" . $viewCount . " views] \r\n");
+                fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1]: " . $youtube_url[0] . "  [Title: " . $media->group->title . "] [Length: " . $time . " min] [" . $rating . " user rating] [" . $view_count . " views] \r\n");
             }
 
             break;
@@ -223,7 +216,7 @@ if (false == in_array($nickc[1], $ban_list)) {
                         $short_url = make_bitly_url($topLink->getUrl(), $config['bitly_username'], $config['bitly_apikey'], 'xml');
 
 
-                        fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1]: " . $title . " " . $short_url . " [$upvotes/$downvotes] [TID:$reddit_thread_id] $self_text\n");
+                        fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1]: " . $title . " " . $short_url . " [$upvotes/$downvotes] [Thread ID:$reddit_thread_id] $self_text\n");
 
                         //Unset it so it doesn't reappear again
                         unset($self_text);
@@ -258,6 +251,7 @@ if (false == in_array($nickc[1], $ban_list)) {
 
                     //Separate up/down from the command
                     $vote = explode("vote $thread_id", $args);
+
                     //Maybe it's Pidgin, but there seems to be a whitespace issue
                     $vote_direction = trim($vote[1]);
 
