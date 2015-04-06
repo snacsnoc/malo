@@ -238,7 +238,7 @@ if (false == in_array($nickc[1], $ban_list)) {
                     //Get Reddit link and post comment on root  
                     $subreddit_post = $reddit->getLink($thread_id);
 
-                    if ($subreddit_post->reply($comment_text)) {
+                    if (true == $subreddit_post->reply($comment_text)) {
                         fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1]: comment confirmed \r\n");
                     } else {
                         fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1]: error: cannot comment :( \r\n");
