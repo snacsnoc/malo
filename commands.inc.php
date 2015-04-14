@@ -17,7 +17,7 @@ if(false == $redis->connect($config['redis_server'])){
 }
 //
 //Version 
-$version = "malo IRC bot version 1.88 by snacsnoc <easton@geekness.eu>";
+$version = "malo IRC bot version 1.89 by snacsnoc <easton@geekness.eu>";
 
 //Check if the user is in the banlist
 if (false == in_array($nickc[1], $ban_list)) {
@@ -599,7 +599,8 @@ if (false == in_array($nickc[1], $ban_list)) {
 
                 default:
                     //If user has a lat and long in redis, get conditions
-                    if (($user_location = $redis->get($nickc[1]))) {
+                    if (true == $redis->get($nickc[1])) {
+                        $user_location = $redis->get($nickc[1]);
                         $geo = explode(',', $user_location);
 
                         $condition = $forecast->getCurrentConditions($geo[0], $geo[1]);
@@ -673,7 +674,7 @@ if (false == in_array($nickc[1], $ban_list)) {
 
         //There needs to a better way to list commands         
         case ".help":
-            fputs($socket, "PRIVMSG " . $nickc[1] . " :All commands are here: http//paste.gelat.in/441 \r\n");
+            fputs($socket, "PRIVMSG " . $nickc[1] . " :All commands are here: https://pasteros.io/552c80f27fd57 \r\n");
         break;
 
         ##BOT/SYS COMMANDS##
