@@ -428,7 +428,7 @@ if (false == in_array($nickc[1], $ban_list)) {
             break;
 
         case ".malo":
-            fputs($socket, "PRIVMSG " . $config['chan'] . " :http://i.imgur.com/Bb7WO.jpg\r\n");
+            fputs($socket, "PRIVMSG " . $config['chan'] . " :http://i.imgur.com/Bb7WO.jpg https://github.com/snacsnoc/malo\r\n");
             break;
 
 
@@ -564,6 +564,69 @@ if (false == in_array($nickc[1], $ban_list)) {
 
             break;
 
+
+        case ".github":
+            $github_command = explode(" ", $args);
+
+            switch (trim($github_command[0])) {
+
+                case "getuser":
+                    $user_to_get = trim($ex[5]);
+                    $rss_feed = "https://github.com/$user_to_get.atom";
+                    $feed = simplexml_load_file($rss_feed);
+                    if ($feed) {
+
+                        $link = $feed->entry[0]->link->attributes();
+                        $link = $link['href'];
+                        $title = trim($feed->entry[0]->title);
+                        $time = $feed->entry[0]->published;
+
+                        //$short_url = make_bitly_url($link['href'], $config['bitly_username'], $config['bitly_apikey'], 'xml');
+
+                        $latest_activity = "$title [URL: $link] @ $time";
+
+                    } else {
+                        fputs($socket, "PRIVMSG " . $config['chan'] . " :Unable to get latest activity :( \r\n");
+
+                    }
+
+                    fputs($socket, "PRIVMSG " . $config['chan'] . " :Latest activity for $user_to_get: $latest_activity\r\n");
+
+                    break;
+
+                case "getrepo":
+                    $repo_to_get = trim($ex[5]);
+                    $rss_feed = "https://github.com/$repo_to_get/commits/master.atom";
+                    $feed = simplexml_load_file($rss_feed);
+                    if ($feed) {
+
+                        $link = $feed->entry[0]->link->attributes();
+                        $link = $link['href'];
+                        $title = trim($feed->entry[0]->title);
+
+
+                        //$short_url = make_bitly_url($link['href'], $config['bitly_username'], $config['bitly_apikey'], 'xml');
+                     $latest_commit = "$title [commit: $link]";
+                    } else {
+                        fputs($socket, "PRIVMSG " . $config['chan'] . " :Unable to get latest activity :(( \r\n");
+                    }
+
+                    fputs($socket, "PRIVMSG " . $config['chan'] . " :Latest commit: $latest_commit\r\n");
+
+
+
+                    break;
+
+                default:
+
+                    fputs($socket, "PRIVMSG " . $config['chan'] . " :Use .github getuser/getrepo <username>/<username/reponame>\r\n");
+                
+                break;
+
+            }
+        break;
+
+
         //Gets weather conditions by postal code/zip
         case ".w":
             $weather_command = explode(" ", $args);
@@ -644,12 +707,18 @@ if (false == in_array($nickc[1], $ban_list)) {
         case ".comp":
             $slink[] = "you are sexy!";
             $slink[] = "damn, you're fine!";
-            $slink[] = "lose some weight!";
             $slink[] = "you smell, shower!";
             $slink[] = "you have the figure of an angel";
             $slink[] = "everyone in your life loves you";
             $slink[] = "why are you so handsome?";
             $slink[] = "lookin good!";
+            $slink[] = "Yes, I've got a lot going on, but I'm never too busy for you.";
+            $slink[] = "When I grow up, I want to be you.";
+            $slink[] = "You're smarter than Google and Mary Poppins combined";
+            $slink[] = "Your confidence is so impressive, you could walk into Mordor and everybody would be like 'Yep, that makes sense.'";
+            $slink[] = "If you were running for the next Linux maintainer, I would vote for you. And clear your search history. Because programming is a dirty business, and they will dig that shit up. But don't worry, I got you";
+            $slink[] = "You inspire me. And strangers, probably. Also, friends and stalkers. You are the inspiration to many.";
+            $slink[] = "Your eyes color my cheeks in blush, for you are my Maybeline";
             
             $random = rand(0, count($slink) - 1);
             fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1]: " . "$slink[$random]\r\n");
@@ -770,6 +839,8 @@ if (false == in_array($nickc[1], $ban_list)) {
 
             fputs($socket, "PRIVMSG " . $config['chan'] . " :https://github.com/notori0us/shibabot Latest commit: $latest_commit\r\n");
             break;
+
+
 
         //This doesn't work
         case ".restart":
