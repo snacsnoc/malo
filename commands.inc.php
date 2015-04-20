@@ -78,7 +78,7 @@ if (false == in_array($nickc[1], $ban_list)) {
     
     //CTCP VERSION reply
     if (trim($ex[3]) == ':' . chr(1) . "VERSION" . chr(1)) {
-        fputs($socket, "PRIVMSG " . $nickc[1] . " : $version, running on " . PHP_OS . " with PHP version " . phpversion() . " \r\n");
+        fputs($socket, "PRIVMSG " . $nickc[1] . " : $version, running on " . PHP_OS . " with PHP version " . phpversion() . ". https://github.com/snacsnoc/malo \r\n");
     }
     
     
@@ -706,7 +706,7 @@ if (false == in_array($nickc[1], $ban_list)) {
                         
                         fputs($socket, "PRIVMSG " . $config['chan'] . " :" . $nickc[1] . ": Currently " . chr(3) . chr(57) . substr($condition->getTemperature(), 0, 5) . "C (" . c2f($condition->getTemperature()) . "F)" . chr(15) . " and " . $condition->getSummary() . ". Tomorrow low of " . substr($forecast_conditions[1]->getMinTemperature(), 0, 5) . "C (" . c2f($forecast_conditions[1]->getMinTemperature()) . "F), high of " . substr($forecast_conditions[1]->getMaxTemperature(), 0, 5) . "C (" . c2f($forecast_conditions[1]->getMaxTemperature()) . "F) and " . $forecast_conditions[1]->getSummary() . " \r\n");
                     } else {
-                        fputs($socket, "PRIVMSG " . $config['chan'] . " :You don't exist. Please set your location by using .w set <city, state/postal code/zipcode> then use .w\r\n");
+                        fputs($socket, "PRIVMSG " . $config['chan'] . " :You don't exist. Please set your location by using .w set <city, state/postal code/zipcode> then use .w, or just use .w <location>\r\n");
                     }
                     
                     break;
