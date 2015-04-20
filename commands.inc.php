@@ -299,6 +299,7 @@ if (false == in_array($nickc[1], $ban_list)) {
             fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1]: " . lineread("adverbs.txt", rand(1, count(file("adverbs.txt")))) . " \r\n");
             break;
 
+        //adjective noun verb noun    
         case ".anvn":
 
             if(null == $ex[4]){
@@ -314,7 +315,7 @@ if (false == in_array($nickc[1], $ban_list)) {
 
                 $verb = lineread("verbs.txt", rand(1, count(file("verbs.txt"))));
 
-                $adjective = lineread("adjectives.txt", rand(1, count(file("adjectives.txt"))));
+                $adjective = rtrim(lineread("adjectives.txt", rand(1, count(file("adjectives.txt")))));
 
                 fputs($socket, "PRIVMSG " . $config['chan'] . " :$user is a $adjective $noun to $verb a $noun_second \r\n");
             }
