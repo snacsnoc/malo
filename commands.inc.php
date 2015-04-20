@@ -278,7 +278,7 @@ if (false == in_array($nickc[1], $ban_list)) {
             }
 
             break;
-            
+
         //random noun
         case ".noun":
             fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1]: " . lineread("nouns_a.txt", rand(1, count(file("nouns_a.txt")))) . " \r\n");
@@ -658,7 +658,7 @@ if (false == in_array($nickc[1], $ban_list)) {
                         fputs($socket, "PRIVMSG " . $config['chan'] . " :".$nickc[1].": Location set. You may now use .w\r\n");
                     } elseif (false == $location) {
                         echo "couln't find lat & long for $location\n";
-                        fputs($socket, "PRIVMSG " . $config['chan'] . " :error: could not add location for " . $nickc[1] . "\r\n");
+                        fputs($socket, "PRIVMSG " . $config['chan'] . " :SUPER MEGA ERROR: could not add location for " . $nickc[1] . "\r\n");
                     }
 
                     break;
@@ -676,7 +676,7 @@ if (false == in_array($nickc[1], $ban_list)) {
 
                         fputs($socket, "PRIVMSG " . $config['chan'] . " :" . $nickc[1] . ": Currently " . chr(3) . chr(57) . substr($condition->getTemperature(),0,5) . "C (" . c2f($condition->getTemperature()) . "F)".chr(15)." and " . $condition->getSummary() . ". Tomorrow low of " . substr($forecast_conditions[1]->getMinTemperature(), 0, 5) . "C (" . c2f($forecast_conditions[1]->getMinTemperature()) . "F), high of " . substr($forecast_conditions[1]->getMaxTemperature(), 0, 5) . "C (" . c2f($forecast_conditions[1]->getMaxTemperature()) . "F) and " . $forecast_conditions[1]->getSummary() . " \r\n");
                     } else {
-                        fputs($socket, "PRIVMSG " . $config['chan'] . " :You don't exist. Please set your location by using .w set <city, state/postal code/zipcode>\r\n");
+                        fputs($socket, "PRIVMSG " . $config['chan'] . " :You don't exist. Please set your location by using .w set <city, state/postal code/zipcode> then use .w\r\n");
                     }
 
                     break;
@@ -744,7 +744,7 @@ if (false == in_array($nickc[1], $ban_list)) {
 
         //There needs to a better way to list commands         
         case ".help":
-            fputs($socket, "PRIVMSG " . $nickc[1] . " :All commands are here: https://pasteros.io/552c80f27fd57 \r\n");
+            fputs($socket, "PRIVMSG " . $nickc[1] . " :All commands are here: https://pasteros.io/5535791ad06e0 \r\n");
         break;
 
         ##BOT/SYS COMMANDS##
