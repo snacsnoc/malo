@@ -17,7 +17,7 @@ if(false == $redis->connect($config['redis_server'])){
 }
 //
 //Version 
-$version = "malo IRC bot version 1.90 by snacsnoc <easton@geekness.eu>";
+$version = "malo IRC bot version 1.901 by snacsnoc <easton@geekness.eu>";
 
 //Check if the user is in the banlist
 if (false == in_array($nickc[1], $ban_list)) {
@@ -304,12 +304,19 @@ if (false == in_array($nickc[1], $ban_list)) {
             fputs($socket, "PRIVMSG " . $config['chan'] . " :" . convert(memory_get_usage(true)) . "\r\n");
             break;
 
+         
+        //Check if a port is open    
         case ".checkport":
             $args = explode(":", $args);
-            if(is_int($args[1])){
-                fputs($socket, "PRIVMSG " . $config['chan'] . " :Result: " . checkport($args[0], $args[1]) . "\r\n");
+ 
+            if(is_int((int)$args[1])){
+                if(true == checkport($args[0], $args[1])){
+                    fputs($socket, "PRIVMSG " . $config['chan'] . " :Result: port is open!\r\n");
+                }else{
+                    fputs($socket, "PRIVMSG " . $config['chan'] . " :Result: port is closed!\r\n");
+                }
             }else{
-                fputs($socket, "PRIVMSG " . $config['chan'] . " :Not valid port number!\r\n");
+                fputs($socket, "PRIVMSG " . $config['chan'] . " :Not valid port number. Use .checkport <hostname/ip>:<port>\r\n");
             }
             break;
 
@@ -581,16 +588,11 @@ if (false == in_array($nickc[1], $ban_list)) {
                         $title = trim($feed->entry[0]->title);
                         $time = $feed->entry[0]->published;
 
-                        //$short_url = make_bitly_url($link['href'], $config['bitly_username'], $config['bitly_apikey'], 'xml');
 
-                        $latest_activity = "$title [URL: $link] @ $time";
-
+                        fputs($socket, "PRIVMSG " . $config['chan'] . " :Latest activity for $user_to_get: $title [URL: $link] @ $time\r\n");
                     } else {
                         fputs($socket, "PRIVMSG " . $config['chan'] . " :Unable to get latest activity :( \r\n");
-                        break;
                     }
-
-                    fputs($socket, "PRIVMSG " . $config['chan'] . " :Latest activity for $user_to_get: $latest_activity\r\n");
 
                     break;
 
@@ -604,17 +606,11 @@ if (false == in_array($nickc[1], $ban_list)) {
                         $link = $link['href'];
                         $title = trim($feed->entry[0]->title);
 
-
-                        //$short_url = make_bitly_url($link['href'], $config['bitly_username'], $config['bitly_apikey'], 'xml');
                      $latest_commit = "$title [commit: $link]";
+                     fputs($socket, "PRIVMSG " . $config['chan'] . " :Latest commit: $title [commit: $link]\r\n");
                     } else {
-                        fputs($socket, "PRIVMSG " . $config['chan'] . " :Unable to get latest activity :(( \r\n");
-                        break;   
+                        fputs($socket, "PRIVMSG " . $config['chan'] . " :Unable to get latest activity :(( \r\n"); 
                     }
-
-                    fputs($socket, "PRIVMSG " . $config['chan'] . " :Latest commit: $latest_commit\r\n");
-
-
 
                     break;
 
