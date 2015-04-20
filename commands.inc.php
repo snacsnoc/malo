@@ -278,18 +278,22 @@ if (false == in_array($nickc[1], $ban_list)) {
             }
 
             break;
+            
         //random noun
         case ".noun":
             fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1]: " . lineread("nouns_a.txt", rand(1, count(file("nouns_a.txt")))) . " \r\n");
             break;
+
         //random verb
         case ".verb":
             fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1]: " . lineread("verbs.txt", rand(1, count(file("verbs.txt")))) . " \r\n");
             break;
+
         //random adjective
         case ".adjective":
             fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1]: " . lineread("adjectives.txt", rand(1, count(file("adjectives.txt")))) . " \r\n");
             break;
+
         //random adverb
         case ".adverb":
             fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1]: " . lineread("adverbs.txt", rand(1, count(file("adverbs.txt")))) . " \r\n");
@@ -301,9 +305,12 @@ if (false == in_array($nickc[1], $ban_list)) {
             break;
 
         case ".mem":
-            fputs($socket, "PRIVMSG " . $config['chan'] . " :" . convert(memory_get_usage(true)) . "\r\n");
+            fputs($socket, "PRIVMSG " . $config['chan'] . " :Allocated: " . convert(memory_get_usage(true)) . "\r\n");
             break;
 
+        case ".memp":
+            fputs($socket, "PRIVMSG " . $config['chan'] . " :Allocated peak: " . convert(memory_get_peak_usage(true)) . "\r\n");
+            break;        
          
         //Check if a port is open    
         case ".checkport":
