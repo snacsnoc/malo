@@ -299,6 +299,27 @@ if (false == in_array($nickc[1], $ban_list)) {
             fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1]: " . lineread("adverbs.txt", rand(1, count(file("adverbs.txt")))) . " \r\n");
             break;
 
+        case ".anvn":
+
+            if(null == $ex[4]){
+                fputs($socket, "PRIVMSG " . $config['chan'] . " :No user specified! Use .anvn <nick> \r\n");
+            }else{
+                $user = trim($ex[4]);
+
+                $adverb = lineread("adverbs.txt", rand(1, count(file("adverbs.txt"))));
+
+                $noun = lineread("nouns_a.txt", rand(1, count(file("nouns_a.txt"))));
+
+                $noun_second = lineread("nouns_a.txt", rand(1, count(file("nouns_a.txt"))));
+
+                $verb = lineread("verbs.txt", rand(1, count(file("verbs.txt"))));
+
+                $adjective = lineread("adjectives.txt", rand(1, count(file("adjectives.txt"))));
+
+                fputs($socket, "PRIVMSG " . $config['chan'] . " :$user is a $adjective $noun to $verb a $noun_second \r\n");
+            }
+            break;    
+
         case ".poke":
             $args = substr($args, 0, -3);
             fputs($socket, "PRIVMSG " . $config['chan'] . ' :' . chr(1) . 'ACTION pokes ' . "$args" . chr(1) . "\r\n");
