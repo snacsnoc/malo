@@ -3,9 +3,9 @@
 function checkport($host, $port) {
     $fp = @fsockopen($host, $port, $errno, $errstr, 4);
     if ($fp) {
-        return "open";
+        return true;
     } else {
-        return "closed";
+        return false;
     }
 }
 
