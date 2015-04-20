@@ -587,7 +587,7 @@ if (false == in_array($nickc[1], $ban_list)) {
 
                     } else {
                         fputs($socket, "PRIVMSG " . $config['chan'] . " :Unable to get latest activity :( \r\n");
-
+                        break;
                     }
 
                     fputs($socket, "PRIVMSG " . $config['chan'] . " :Latest activity for $user_to_get: $latest_activity\r\n");
@@ -609,6 +609,7 @@ if (false == in_array($nickc[1], $ban_list)) {
                      $latest_commit = "$title [commit: $link]";
                     } else {
                         fputs($socket, "PRIVMSG " . $config['chan'] . " :Unable to get latest activity :(( \r\n");
+                        break;   
                     }
 
                     fputs($socket, "PRIVMSG " . $config['chan'] . " :Latest commit: $latest_commit\r\n");
@@ -651,7 +652,7 @@ if (false == in_array($nickc[1], $ban_list)) {
                         //store lat and long in redis
                         $redis->set($nickc[1], $location['lat'] . ',' . $location['long']);
                         echo "geo lat & long (" . $location['lat'] . $location['long'] . ") set for " . $nickc[1] . "\r\n";
-                        fputs($socket, "PRIVMSG " . $config['chan'] . " :location set for " . $nickc[1] . "\r\n");
+                        fputs($socket, "PRIVMSG " . $config['chan'] . " :".$nickc[1].": Location set. You may now use .w\r\n");
                     } elseif (false == $location) {
                         echo "couln't find lat & long for $location\n";
                         fputs($socket, "PRIVMSG " . $config['chan'] . " :error: could not add location for " . $nickc[1] . "\r\n");
@@ -670,10 +671,7 @@ if (false == in_array($nickc[1], $ban_list)) {
 
                         $forecast_conditions = $forecast->getForecastWeek($geo[0], $geo[1]);
 
-   
-
-
-                        fputs($socket, "PRIVMSG " . $config['chan'] . " :" . $nickc[1] . ": Currently " . substr($condition->getTemperature(),0,5) . "C (" . c2f($condition->getTemperature()) . "F) and " . $condition->getSummary() . ". Tomorrow low of " . substr($forecast_conditions[1]->getMinTemperature(), 0, 5) . "C (" . c2f($forecast_conditions[1]->getMinTemperature()) . "F), high of " . substr($forecast_conditions[1]->getMaxTemperature(), 0, 5) . "C (" . c2f($forecast_conditions[1]->getMaxTemperature()) . "F) and " . $forecast_conditions[1]->getSummary() . " \r\n");
+                        fputs($socket, "PRIVMSG " . $config['chan'] . " :" . $nickc[1] . ": Currently " . chr(3) . chr(57) . substr($condition->getTemperature(),0,5) . "C (" . c2f($condition->getTemperature()) . "F)".chr(15)." and " . $condition->getSummary() . ". Tomorrow low of " . substr($forecast_conditions[1]->getMinTemperature(), 0, 5) . "C (" . c2f($forecast_conditions[1]->getMinTemperature()) . "F), high of " . substr($forecast_conditions[1]->getMaxTemperature(), 0, 5) . "C (" . c2f($forecast_conditions[1]->getMaxTemperature()) . "F) and " . $forecast_conditions[1]->getSummary() . " \r\n");
                     } else {
                         fputs($socket, "PRIVMSG " . $config['chan'] . " :You don't exist. Please set your location by using .w set <city, state/postal code/zipcode>\r\n");
                     }
