@@ -2,11 +2,11 @@
 
 //Goddamnit this code is terrible
 //....but it works
-require_once './reddit-api-client/Reddit.php';
+
 
 use \RedditApiClient\Reddit;
 
-require 'banlist.inc.php';
+
 
 $redis = new Redis();
 
@@ -15,9 +15,18 @@ $redis = new Redis();
 if (false == $redis->connect($config['redis_server'])) {
     die('Redis server down. Check configuration!');
 }
-//
+
+
+
+$client = new Google_Client();
+$client->setApplicationName("Client_Library_Examples");
+
+$client->setDeveloperKey($config['google_services_apikey']);
+$youtube = new Google_Service_YouTube($client);
+
+
 //Version 
-$version = "malo IRC bot version 1.901 by snacsnoc <easton@geekness.eu>";
+$version = "malo IRC bot version 1.91 by snacsnoc <easton@geekness.eu>";
 
 //Check if the user is in the banlist
 if (false == in_array($nickc[1], $ban_list)) {
@@ -105,56 +114,53 @@ if (false == in_array($nickc[1], $ban_list)) {
         //searches youtube for keyword
         case ".yt":
             
-            //Replace space with a slash
-            $args = preg_replace('/[[:space:]]+/', '/', trim($args));
+
+            //See https://developers.google.com/youtube/v3/docs/videos
+            $youtube = new Google_Service_YouTube($client);
+
+            $searchResponse = $youtube->search->listSearch('id,snippet', array(
+                'q' => $args,
+                'maxResults' => 1,
+                'type' => 'video',
+                ));
+
+            if($searchResponse['items'][0]['id']['videoId']){
+
+                $youtube_video_id = $searchResponse['items'][0]['id']['videoId']; 
+                $youtube_title = $searchResponse['items'][0]['snippet']['title'];
+
+                //$youtube_published_at = $searchResponse['items'][0]['snippet']['publishedAt'];
+
+                //Get view count and like count
+                $videosResponse = $youtube->videos->listVideos('snippet, statistics', array(
+                'id' => $youtube_video_id,
+                ));
+
+                $youtube_viewcount = $videosResponse['items'][0]['statistics']['viewCount'];
+
+                //$youtube_likecount = $videosResponse['items'][0]['statistics']['likeCount'];
+                
+                //Get more details about the video
+                $contentResponse = $youtube->videos->listVideos('snippet, contentDetails', array(
+                'id' => $youtube_video_id,
+                ));
+                
+                $youtube_length = $contentResponse['items'][0]['contentDetails']['duration'];
+                //A response returns with "PT99M99S" so we remove the "PT" and get just the minute and second length
+                $youtube_length = substr($youtube_length, 2);
+                preg_match('/(\d+)M(\d+)S/', $youtube_length, $youtube_length);
+
+                //standard definition or high definition
+                $youtube_definition = $contentResponse['items'][0]['contentDetails']['definition'];
+
+                //2d or 3d
+                $youtube_dimension = $contentResponse['items'][0]['contentDetails']['dimension'];
+
+                fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1]: [Title: $youtube_title] [http://youtube.com/watch?v=$youtube_video_id] [Views: $youtube_viewcount] [Length: ".$youtube_length[1]." min ".$youtube_length[2]." sec] [$youtube_definition] [$youtube_dimension]\r\n");
             
-            //Found bug when using # in searches
-            $args = preg_replace('/#/', 'pound', $args);
-            
-            $feedURL = "http://gdata.youtube.com/feeds/api/videos?q=$args&orderby=relevance&max-results=1";
-            $sxml    = simplexml_load_file($feedURL);
-            // get summary counts from opensearch: namespace
-            $counts  = $sxml->children('http://a9.com/-/spec/opensearchrss/1.0/');
-            
-            if (0 == $counts->totalResults) {
-                fputs($socket, "PRIVMSG " . $config['chan'] . " : no results, dupin \r\n");
-                break;
+            }else{
+                fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1]: No results :( \r\n");
             }
-            
-            foreach ($sxml->entry as $ulaz) {
-                //Search for the given term
-                $media = $ulaz->children('http://search.yahoo.com/mrss/');
-                
-                $attrs = $media->group->player->attributes();
-                
-                $youtube_url = explode("&", $attrs['url']);
-                
-                // get <yt:duration> node for video length
-                $yt    = $media->children('http://gdata.youtube.com/schemas/2007');
-                $attrs = $yt->duration->attributes();
-                
-                $time = sprintf("%0.2f", $attrs['seconds'] / 60);
-                
-                
-                // get <yt:stats> node for viewer statistics
-                $yt           = $ulaz->children('http://gdata.youtube.com/schemas/2007');
-                $viewer_stats = $yt->statistics->attributes();
-                
-                $view_count = $viewer_stats['viewCount'];
-                
-                // get <gd:rating> node for video ratings
-                $gd = $ulaz->children('http://schemas.google.com/g/2005');
-                if ($gd->rating) {
-                    $attrs  = $gd->rating->attributes();
-                    $rating = $attrs['average'];
-                } else {
-                    $rating = 0;
-                }
-                
-                
-                fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1]: " . $youtube_url[0] . "  [Title: " . $media->group->title . "] [Length: " . $time . " min] [" . $rating . " user rating] [" . $view_count . " views] \r\n");
-            }
-            
             break;
         
         
