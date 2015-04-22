@@ -19,7 +19,8 @@ $config = array(
      'bitly_username' => "#",
      'bitly_apikey' => "#",
      'redis_server' => '#',
-     'forecast.io_apikey' => "#"
+     'forecast.io_apikey' => "#",
+     'google_services_apikey' => "x"
 );
 date_default_timezone_set('America/Edmonton');
 
@@ -27,7 +28,9 @@ date_default_timezone_set('America/Edmonton');
 //Switch to an autoloader
 require_once 'functions.inc.php';
 require_once 'forecast.io-php-api/lib/forecast.io.php';
-
+require 'banlist.inc.php';
+require_once './google-api-php-client/src/Google/autoload.php';
+require_once './reddit-api-client/Reddit.php';
 
 $socket = fsockopen("ssl://".$config['server'], $config['port']);
 
