@@ -7,6 +7,8 @@ Malo the IRC bot. The code has been in use for a number of years. It is terrible
 
 * [Redis PHP extension](https://github.com/nicolasff/phpredis)
 
+* [Google API client](https://github.com/google/google-api-php-client)
+
 ###Configuration###
 
 Edit the config values in ``proc.php``. Clone my fork of reddit-api-client and put it and the forecast.io-php-api folder in the same directory as malo (I know, I'll fix this at somepoint).
