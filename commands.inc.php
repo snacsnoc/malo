@@ -689,11 +689,15 @@ if (false == in_array($nickc[1], $ban_list)) {
                     
                     if (true == $location) {
                         //store lat and long in redis
-                        $redis->set($nickc[1], $location['lat'] . ',' . $location['long']);
-                        echo "geo lat & long (" . $location['lat'] . $location['long'] . ") set for " . $nickc[1] . "\r\n";
-                        fputs($socket, "PRIVMSG " . $config['chan'] . " :" . $nickc[1] . ": Location set. You may now use .w\r\n");
+                        if(true == $redis->set($nickc[1], $location['lat'] . ',' . $location['long'])){
+                            
+                            fputs($socket, "PRIVMSG " . $config['chan'] . " :" . $nickc[1] . ": Location set. You may now use .w\r\n");
+                        }else{
+                            //Possible OOM error
+                            fputs($socket, "PRIVMSG " . $config['chan'] . " : Redis error!\r\n");
+                        }
                     } elseif (false == $location) {
-                        echo "couln't find lat & long for $location\n";
+                        
                         fputs($socket, "PRIVMSG " . $config['chan'] . " :SUPER MEGA ERROR: could not add location for " . $nickc[1] . "\r\n");
                     }
                     
@@ -709,8 +713,8 @@ if (false == in_array($nickc[1], $ban_list)) {
                         $condition = $forecast->getCurrentConditions($geo[0], $geo[1]);
                         
                         $forecast_conditions = $forecast->getForecastWeek($geo[0], $geo[1]);
-                        
-                        fputs($socket, "PRIVMSG " . $config['chan'] . " :" . $nickc[1] . ": Currently " . chr(3) . chr(57) . substr($condition->getTemperature(), 0, 5) . "C (" . c2f($condition->getTemperature()) . "F)" . chr(15) . " and " . $condition->getSummary() . ". Tomorrow low of " . substr($forecast_conditions[1]->getMinTemperature(), 0, 5) . "C (" . c2f($forecast_conditions[1]->getMinTemperature()) . "F), high of " . substr($forecast_conditions[1]->getMaxTemperature(), 0, 5) . "C (" . c2f($forecast_conditions[1]->getMaxTemperature()) . "F) and " . $forecast_conditions[1]->getSummary() . " \r\n");
+
+                        fputs($socket, "PRIVMSG " . $config['chan'] . " :" . $nickc[1] . ": Currently " . substr($condition->getTemperature(), 0, 5) . "C (" . c2f($condition->getTemperature()) . "F) and " . $condition->getSummary() . ". Tomorrow low of " . substr($forecast_conditions[1]->getMinTemperature(), 0, 5) . "C (" . c2f($forecast_conditions[1]->getMinTemperature()) . "F), high of " . substr($forecast_conditions[1]->getMaxTemperature(), 0, 5) . "C (" . c2f($forecast_conditions[1]->getMaxTemperature()) . "F) and " . $forecast_conditions[1]->getSummary() . " \r\n");
                     } else {
                         fputs($socket, "PRIVMSG " . $config['chan'] . " :You don't exist. Please set your location by using .w set <city, state/postal code/zipcode> then use .w, or just use .w get <location>\r\n");
                     }
@@ -727,7 +731,7 @@ if (false == in_array($nickc[1], $ban_list)) {
                     
                     $condition           = $forecast->getCurrentConditions($coordinates['lat'], $coordinates['long']);
                     $forecast_conditions = $forecast->getForecastWeek($coordinates['lat'], $coordinates['long']);
-                    
+
                     if (null !== $condition) {
                         fputs($socket, "PRIVMSG " . $config['chan'] . " :" . $nickc[1] . ": Currently " . $condition->getTemperature() . "C (" . c2f($condition->getTemperature()) . "F) and " . $condition->getSummary() . ". Tomorrow low of " . $forecast_conditions[1]->getMinTemperature() . "C (" . c2f($forecast_conditions[1]->getMinTemperature()) . "F), high of " . $forecast_conditions[1]->getMaxTemperature() . "C (" . c2f($forecast_conditions[1]->getMaxTemperature()) . "F) and " . $forecast_conditions[1]->getSummary() . " \r\n");
                     } else {
