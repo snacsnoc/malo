@@ -670,7 +670,7 @@ if (false == in_array($nickc[1], $ban_list)) {
         case ".w":
             $weather_command = explode(" ", $args);
             
-            $forecast = new ForecastIO($config['forecast.io_apikey']);
+            $forecast = new ForecastIO($config['forecast.io_apikey'], 'auto', 'en');
             
             switch (trim($weather_command[0])) {
                 
@@ -713,8 +713,8 @@ if (false == in_array($nickc[1], $ban_list)) {
                         $condition = $forecast->getCurrentConditions($geo[0], $geo[1]);
                         
                         $forecast_conditions = $forecast->getForecastWeek($geo[0], $geo[1]);
-
-                        fputs($socket, "PRIVMSG " . $config['chan'] . " :" . $nickc[1] . ": Currently " . substr($condition->getTemperature(), 0, 5) . "C (" . c2f($condition->getTemperature()) . "F) and " . $condition->getSummary() . ". Tomorrow low of " . substr($forecast_conditions[1]->getMinTemperature(), 0, 5) . "C (" . c2f($forecast_conditions[1]->getMinTemperature()) . "F), high of " . substr($forecast_conditions[1]->getMaxTemperature(), 0, 5) . "C (" . c2f($forecast_conditions[1]->getMaxTemperature()) . "F) and " . $forecast_conditions[1]->getSummary() . " \r\n");
+                        
+                        fputs($socket, "PRIVMSG " . $config['chan'] . " :" . $nickc[1] . ": Currently " . $condition->getTemperature() . "° and " . $condition->getSummary() . ". Tomorrow low of " . $forecast_conditions[1]->getMinTemperature() . "°, high of " . substr($forecast_conditions[1]->getMaxTemperature(), 0, 5) . "°  and " . $forecast_conditions[1]->getSummary() . " \r\n");
                     } else {
                         fputs($socket, "PRIVMSG " . $config['chan'] . " :You don't exist. Please set your location by using .w set <city, state/postal code/zipcode> then use .w, or just use .w get <location>\r\n");
                     }
@@ -731,9 +731,9 @@ if (false == in_array($nickc[1], $ban_list)) {
                     
                     $condition           = $forecast->getCurrentConditions($coordinates['lat'], $coordinates['long']);
                     $forecast_conditions = $forecast->getForecastWeek($coordinates['lat'], $coordinates['long']);
-
+                    
                     if (null !== $condition) {
-                        fputs($socket, "PRIVMSG " . $config['chan'] . " :" . $nickc[1] . ": Currently " . $condition->getTemperature() . "C (" . c2f($condition->getTemperature()) . "F) and " . $condition->getSummary() . ". Tomorrow low of " . $forecast_conditions[1]->getMinTemperature() . "C (" . c2f($forecast_conditions[1]->getMinTemperature()) . "F), high of " . $forecast_conditions[1]->getMaxTemperature() . "C (" . c2f($forecast_conditions[1]->getMaxTemperature()) . "F) and " . $forecast_conditions[1]->getSummary() . " \r\n");
+                        fputs($socket, "PRIVMSG " . $config['chan'] . " :" . $nickc[1] . ": Currently " . $condition->getTemperature() . "° and " . $condition->getSummary() . ". Tomorrow low of " . $forecast_conditions[1]->getMinTemperature() . "° , high of " . $forecast_conditions[1]->getMaxTemperature() . " and " . $forecast_conditions[1]->getSummary() . " \r\n");
                     } else {
                         fputs($socket, "PRIVMSG " . $config['chan'] . " :" . $nickc[1] . ": error: could not get weather\r\n");
                     }
