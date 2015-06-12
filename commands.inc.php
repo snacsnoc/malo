@@ -22,20 +22,30 @@ $client = new Google_Client();
 $client->setApplicationName("Client_Library_Examples");
 
 $client->setDeveloperKey($config['google_services_apikey']);
-$youtube = new Google_Service_YouTube($client);
+#$youtube = new Google_Service_YouTube($client);
 
 
 //Version 
-$version = "malo IRC bot version 1.91 by snacsnoc <easton@geekness.eu>";
+$version = "malo IRC bot version 1.913 by snacsnoc <easton@geekness.eu>";
 
 //Check if the user is in the banlist
 if (false == in_array($nickc[1], $ban_list)) {
     
-    
-    //We use $ex[3] instead of $rawcmd[3] so it doesn't split into two keys.
-    if (true == preg_match_all("%(?:http://)?(?:www.)?(?:youtube.com|youtu.be)/(?:watch\?v=)?(.+)%", trim($ex[3]), $m)) {
-        
-        
+    /*
+    Check if a user sent another a youtube link or in channel, eg:
+    myfavouriteircfriend: https://www.youtube.com/watch?v=JL6RQdDh0mk
+     OR
+    https://www.youtube.com/watch?v=JL6RQdDh0mk
+    */
+
+    if(!isset($ex[4])){
+        $search_key = trim($ex[3]);
+    }else{
+        $search_key = trim($ex[4]);
+    }
+
+    if (true == preg_match_all("%(?:.*)?(?:s)?(?:.*)(?s)(?:http(?:s)://)?(?:www.)?(?:youtube.com|youtu.be)/(?:watch\?v=)?(.+)[?]%", $search_key, $m)) {
+
         /*
         This should not work:
         wwww.youtube.com/watch?v=vGWppcrAo
@@ -44,6 +54,7 @@ if (false == in_array($nickc[1], $ban_list)) {
         http://youtu.be/Yf8IzxaSr1U
         http://www.youtube.com/watch?v=uQX4GuSXYLM
         */
+
         if (!empty($m['0'])) {
             if (preg_match("#(\?|&)#si", $m[1][1])) {
                 parse_str($m['1'], $vars);
@@ -53,28 +64,38 @@ if (false == in_array($nickc[1], $ban_list)) {
                 }
             } else {
                 //Maybe test against preg_match("#^([A-Za-z0-9\-\_]+?)#si", $m['1'])...
-                $youtube_video_key = $m['1'];
+                $youtube_video_key = $m[1][0];
             }
             
-            //Validate that video key is 14 characters
-            if (strlen($youtube_video_key[0]) <= 14) {
+            //Validate that video key is 11 characters
+            if (strlen($youtube_video_key) == 11) {
+
+                $youtube = new Google_Service_YouTube($client);
+
+                //Get view count and like count
+                $videosResponse = $youtube->videos->listVideos('snippet, statistics', array(
+                'id' => $youtube_video_key,
+                ));
+
+
                 
-                if (get_url_contents('http://gdata.youtube.com/feeds/api/videos/' . $youtube_video_key[0]) == "Invalid id") {
-                    fputs($socket, "PRIVMSG " . $config['chan'] . " :Invalid YouTube video ID \r\n");
-                } else {
-                    $feedURL = 'http://gdata.youtube.com/feeds/api/videos/' . $youtube_video_key[0];
-                    $ulaz    = simplexml_load_file($feedURL);
-                    $video   = parseVideoEntry($ulaz);
-                    if ($video == NULL) {
-                        throw new exception("video is null, why is video null");
-                    }
-                    $video->viewCount = base_convert($video->viewCount, 10, 2);
-                    $video->rating    = base_convert($video->rating, 10, 8);
-                    $t                = sprintf("%0.2f", $video->length / 60);
-                    $time             = dechex(sprintf("%0.2f", $video->length / 60));
-                    
-                    fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1]: [" . $video->title . "] [" . $time . " min] [" . $video->rating . " user rating] [" . $video->viewCount . " views] \r\n");
-                }
+
+                $youtube_video_title = $videosResponse['items'][0]['snippet']['title'];
+
+                $youtube_video_viewcount = $videosResponse['items'][0]['statistics']['viewCount'];
+
+                //Get more details about the video
+                $contentResponse = $youtube->videos->listVideos('snippet, contentDetails', array(
+                'id' => $youtube_video_key,
+                ));
+                
+
+                $youtube_video_length = $contentResponse['items'][0]['contentDetails']['duration'];
+
+                //A response returns with "PT99M99S" so we remove the "PT" and get just the minute and second length
+                $youtube_video_length = substr($youtube_video_length, 2);
+
+                fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1]: [" . $youtube_video_title . "] [" . $youtube_video_length . "] [" . $youtube_video_viewcount . " views] \r\n");
             }
         }
     }
@@ -679,6 +700,12 @@ if (false == in_array($nickc[1], $ban_list)) {
                     $address     = rawurlencode($ex[5] . $ex[6]);
                     $geocode     = file_get_contents('http://maps.google.com/maps/api/geocode/json?address=' . $address . '&sensor=false');
                     $output      = json_decode($geocode);
+
+                    if($output->status == "ZERO_RESULTS"){
+                        fputs($socket, "PRIVMSG " . $config['chan'] . " :" . $nickc[1] . ": Error: zero results for that location\r\n");
+                        break;
+                    }
+
                     $geo['lat']  = $output->results[0]->geometry->location->lat;
                     $geo['long'] = $output->results[0]->geometry->location->lng;
                     
@@ -714,7 +741,7 @@ if (false == in_array($nickc[1], $ban_list)) {
                         
                         $forecast_conditions = $forecast->getForecastWeek($geo[0], $geo[1]);
                         
-                        fputs($socket, "PRIVMSG " . $config['chan'] . " :" . $nickc[1] . ": Currently " . $condition->getTemperature() . "° and " . $condition->getSummary() . ". Tomorrow low of " . $forecast_conditions[1]->getMinTemperature() . "°, high of " . substr($forecast_conditions[1]->getMaxTemperature(), 0, 5) . "°  and " . $forecast_conditions[1]->getSummary() . " \r\n");
+                        fputs($socket, "PRIVMSG " . $config['chan'] . " :" . $nickc[1] . ": Currently " . $condition->getTemperature() . "° and " . $condition->getSummary() . ". Tomorrow low of " . $forecast_conditions[1]->getMinTemperature() . "°, high of " . $forecast_conditions[1]->getMaxTemperature() . "°  and " . $forecast_conditions[1]->getSummary() . " \r\n");
                     } else {
                         fputs($socket, "PRIVMSG " . $config['chan'] . " :You don't exist. Please set your location by using .w set <city, state/postal code/zipcode> then use .w, or just use .w get <location>\r\n");
                     }
@@ -725,6 +752,12 @@ if (false == in_array($nickc[1], $ban_list)) {
                     $address             = rawurlencode($ex[5] . $ex[6]);
                     $geocode             = file_get_contents('http://maps.google.com/maps/api/geocode/json?address=' . $address . '&sensor=false');
                     $output              = json_decode($geocode);
+
+
+                    if($output->status == "ZERO_RESULTS"){
+                        fputs($socket, "PRIVMSG " . $config['chan'] . " :" . $nickc[1] . ": Error: zero results for that location\r\n");
+                        break;
+                    }
                     $coordinates['lat']  = $output->results[0]->geometry->location->lat;
                     $coordinates['long'] = $output->results[0]->geometry->location->lng;
                     
@@ -733,7 +766,7 @@ if (false == in_array($nickc[1], $ban_list)) {
                     $forecast_conditions = $forecast->getForecastWeek($coordinates['lat'], $coordinates['long']);
                     
                     if (null !== $condition) {
-                        fputs($socket, "PRIVMSG " . $config['chan'] . " :" . $nickc[1] . ": Currently " . $condition->getTemperature() . "° and " . $condition->getSummary() . ". Tomorrow low of " . $forecast_conditions[1]->getMinTemperature() . "° , high of " . $forecast_conditions[1]->getMaxTemperature() . " and " . $forecast_conditions[1]->getSummary() . " \r\n");
+                        fputs($socket, "PRIVMSG " . $config['chan'] . " :" . $nickc[1] . ": Currently " . $condition->getTemperature() . "° and " . $condition->getSummary() . ". Tomorrow low of " . $forecast_conditions[1]->getMinTemperature() . "°, high of " . $forecast_conditions[1]->getMaxTemperature() . "° and " . $forecast_conditions[1]->getSummary() . " \r\n");
                     } else {
                         fputs($socket, "PRIVMSG " . $config['chan'] . " :" . $nickc[1] . ": error: could not get weather\r\n");
                     }
