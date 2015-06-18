@@ -40,11 +40,12 @@ if (false == in_array($nickc[1], $ban_list)) {
 
     if(!isset($ex[4])){
         $search_key = trim($ex[3]);
+
     }else{
         $search_key = trim($ex[4]);
     }
 
-    if (true == preg_match_all("%(?:.*)?(?:s)?(?:.*)(?s)(?:http(?:s)://)?(?:www.)?(?:youtube.com|youtu.be)/(?:watch\?v=)?(.+)[?]%", $search_key, $m)) {
+    if (true == preg_match_all("%(?:.*)?(?:s)?(?:.*)(?s)(?:http(?:s)://)?(?:www.)?(?:youtube.com|youtu.be)/(?:watch\?v=)?(.+)?(?)%", $search_key, $m)) {
 
         /*
         This should not work:
