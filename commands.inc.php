@@ -22,11 +22,11 @@ $client = new Google_Client();
 $client->setApplicationName("Client_Library_Examples");
 
 $client->setDeveloperKey($config['google_services_apikey']);
-#$youtube = new Google_Service_YouTube($client);
+
 
 
 //Version 
-$version = "malo IRC bot version 1.913 by snacsnoc <easton@geekness.eu>";
+$version = "malo IRC bot version 1.914 by snacsnoc <easton@geekness.eu>";
 
 //Check if the user is in the banlist
 if (false == in_array($nickc[1], $ban_list)) {
@@ -645,6 +645,7 @@ if (false == in_array($nickc[1], $ban_list)) {
                     $user_to_get = trim($ex[5]);
                     $rss_feed    = "https://github.com/$user_to_get.atom";
                     $feed        = simplexml_load_file($rss_feed);
+                    
                     if ($feed) {
                         
                         $link  = $feed->entry[0]->link->attributes();
@@ -737,12 +738,26 @@ if (false == in_array($nickc[1], $ban_list)) {
                     if (true == $redis->get($nickc[1])) {
                         $user_location = $redis->get($nickc[1]);
                         $geo           = explode(',', $user_location);
-                        
+
+                        //Display units
+                        //If short_name is US then we use F, otherwise C
+                        switch ($output->results[0]->address_components[3]->short_name){
+                            case "US":
+                                $units = "°F";
+                                break;
+
+                            default:
+                                $units = "°C";  
+                                break;  
+
+
+                        }
+
                         $condition = $forecast->getCurrentConditions($geo[0], $geo[1]);
                         
                         $forecast_conditions = $forecast->getForecastWeek($geo[0], $geo[1]);
                         
-                        fputs($socket, "PRIVMSG " . $config['chan'] . " :" . $nickc[1] . ": Currently " . $condition->getTemperature() . "° and " . $condition->getSummary() . ". Tomorrow low of " . $forecast_conditions[1]->getMinTemperature() . "°, high of " . $forecast_conditions[1]->getMaxTemperature() . "°  and " . $forecast_conditions[1]->getSummary() . " \r\n");
+                        fputs($socket, "PRIVMSG " . $config['chan'] . " :" . $nickc[1] . ": Currently " . $condition->getTemperature() . "$units and " . $condition->getSummary() . ". Tomorrow low of " . $forecast_conditions[1]->getMinTemperature() . "$units, high of " . $forecast_conditions[1]->getMaxTemperature() . "$units  and " . $forecast_conditions[1]->getSummary() . " \r\n");
                     } else {
                         fputs($socket, "PRIVMSG " . $config['chan'] . " :You don't exist. Please set your location by using .w set <city, state/postal code/zipcode> then use .w, or just use .w get <location>\r\n");
                     }
@@ -763,11 +778,24 @@ if (false == in_array($nickc[1], $ban_list)) {
                     $coordinates['long'] = $output->results[0]->geometry->location->lng;
                     
                     
+                    //Display units
+                    //If short_name is US then we use F, otherwise C
+                    switch ($output->results[0]->address_components[3]->short_name){
+                        case "US":
+                            $units = "°F";
+                            break;
+
+                        default:
+                            $units = "°C";  
+                            break;  
+
+
+                    }
                     $condition           = $forecast->getCurrentConditions($coordinates['lat'], $coordinates['long']);
                     $forecast_conditions = $forecast->getForecastWeek($coordinates['lat'], $coordinates['long']);
-                    
+
                     if (null !== $condition) {
-                        fputs($socket, "PRIVMSG " . $config['chan'] . " :" . $nickc[1] . ": Currently " . $condition->getTemperature() . "° and " . $condition->getSummary() . ". Tomorrow low of " . $forecast_conditions[1]->getMinTemperature() . "°, high of " . $forecast_conditions[1]->getMaxTemperature() . "° and " . $forecast_conditions[1]->getSummary() . " \r\n");
+                        fputs($socket, "PRIVMSG " . $config['chan'] . " :" . $nickc[1] . ": Currently " . $condition->getTemperature() . "$units and " . $condition->getSummary() . ". Tomorrow low of " . $forecast_conditions[1]->getMinTemperature() . "$units, high of " . $forecast_conditions[1]->getMaxTemperature() . "$units and " . $forecast_conditions[1]->getSummary() . " \r\n");
                     } else {
                         fputs($socket, "PRIVMSG " . $config['chan'] . " :" . $nickc[1] . ": error: could not get weather\r\n");
                     }
