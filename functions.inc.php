@@ -258,7 +258,7 @@ function topmovies() {
 
 
 function Acronyms($query) {
-    $query = ereg_replace('[[:space:]]+', '/', trim($query));
+    $query = trim($query);
     $url = "http://acronyms.thefreedictionary.com/" . $query;
     preg_match_all('/<*td><td>(.*?)<\/td>/', file_get_contents($url), $matches);
     if (!$matches[1][0]) {
