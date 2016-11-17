@@ -19,7 +19,7 @@ $client->setDeveloperKey($config['google_services_apikey']);
 
 
 //Version 
-$version = "malo IRC bot version 1.915 by snacsnoc <easton@geekness.eu>";
+$version = "malo IRC bot version 1.916 by snacsnoc <easton@geekness.eu>";
 
 //Check if the user is in the banlist
 if (false == in_array($nickc[1], $ban_list)) {
@@ -56,6 +56,7 @@ if (false == in_array($nickc[1], $ban_list)) {
                 if (!empty($vars['v'])) {
                     $youtube_video_key = $vars['v'];
                 }
+                
             } else {
                 //Maybe test against preg_match("#^([A-Za-z0-9\-\_]+?)#si", $m['1'])...
                 $youtube_video_key = $m[1][0];
@@ -104,20 +105,49 @@ if (false == in_array($nickc[1], $ban_list)) {
             if ($feed) {
                 
                 $link  = $feed->entry[0]->link->attributes();
+
+                //Shorten long commit URL using bit.ly
                 $short_url  = make_bitly_url($link['href'], $config['bitly_username'], $config['bitly_apikey'], 'xml');
                
                 $title = trim($feed->entry[0]->title);
                 
-                #$latest_commit = "$title [commit: $short_url]";
                 fputs($socket, "PRIVMSG " . $config['chan'] . " :Latest commit: $title [commit: $short_url]\r\n");
             } else {
-                fputs($socket, "PRIVMSG " . $config['chan'] . " :Unable to get latest activity :() \r\n");
+                fputs($socket, "PRIVMSG " . $config['chan'] . " :Unable to get latest activity, feed not valid :( \r\n");
             }
         }else{
             echo "No match on github URL\r\n";
         }
       }  
 
+    //Parse twitter.com URLs
+     if (true == preg_match_all("%(?:http(?:s):\/\/)?(?:www.)?twitter.com\/(.*)\/(.*)%", $ex[3], $match)) {
+
+        if($match){
+            //remove first colon
+            $url = substr($ex[3], 1);
+            
+
+            $url = rtrim($url);
+
+            $data = file_get_contents($url);
+
+            if(preg_match('%<title>(.*)<\/title>%', $data, $matches)){
+
+            //Remove HTML entities
+            $decoded_html = html_entity_decode($matches[1], ENT_COMPAT, 'UTF-8');
+
+            //Replace new lines with a slash
+            $decoded_html = str_replace(array("\n", "\r"), ' / ', $decoded_html);
+            var_dump($decoded_html);
+                
+                fputs($socket, "PRIVMSG " . $config['chan'] . " :".$decoded_html."\r\n");
+            } else {
+                fputs($socket, "PRIVMSG " . $config['chan'] . " :NO MATCH TO THE TWITTER URL CONTENT THING, PLS TRY AGAIN LATER OR PREFERABLY NEVER THX \r\n");
+            }
+        }
+    }
+        
     if ($ex[1] == "KICK") {
         fputs($socket, "JOIN " . $config['chan'] . "\r\n");
     }
@@ -137,7 +167,7 @@ if (false == in_array($nickc[1], $ban_list)) {
     echo fputs($socket, "MODE " . $config['chan2'] . " +v " . "$nickc[1]\r\n");
     }
     */
-    
+
     
     //Standard period and exclaimation mark prefixed commands
     switch (strtolower(rtrim($rawcmd[1]))) {
@@ -220,29 +250,7 @@ if (false == in_array($nickc[1], $ban_list)) {
         case ".adverb":
             fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1]: " . lineread("adverbs.txt", rand(1, count(file("adverbs.txt")))) . " \r\n");
             break;
-        
-        //adjective noun verb noun    
-        case ".anvn":
             
-            if (null == $ex[4]) {
-                fputs($socket, "PRIVMSG " . $config['chan'] . " :No user specified! Use .anvn <nick> \r\n");
-            } else {
-                $user = trim($ex[4]);
-                
-                $adverb = lineread("adverbs.txt", rand(1, count(file("adverbs.txt"))));
-                
-                $noun = lineread("nouns_a.txt", rand(1, count(file("nouns_a.txt"))));
-                
-                $noun_second = lineread("nouns_a.txt", rand(1, count(file("nouns_a.txt"))));
-                
-                $verb = lineread("verbs.txt", rand(1, count(file("verbs.txt"))));
-                
-                $adjective = rtrim(lineread("adjectives.txt", rand(1, count(file("adjectives.txt")))));
-                
-                fputs($socket, "PRIVMSG " . $config['chan'] . " :$user is a $adjective $noun to $verb a $noun_second \r\n");
-            }
-            break;
-        
         case ".poke":
             $args = substr($args, 0, -3);
             fputs($socket, "PRIVMSG " . $config['chan'] . ' :' . chr(1) . 'ACTION pokes ' . "$args" . chr(1) . "\r\n");
@@ -283,15 +291,15 @@ if (false == in_array($nickc[1], $ban_list)) {
             if ($args != NULL || !empty($args)) {
                 switch ($args) {
                     
-                    //this uploads memo.txt to pastebin.com
+                    //this uploads memo.txt to pasteros
                     case 'showall':
                         
                         $filename = "memo.txt";
                         
                         $file_contents = file_get_contents($filename);
                         
-                        //JSON POST to pate.gelat.in
-                        //See http://paste.gelat.in/api
+                        //JSON POST to pasteros.io
+                        //See https://pasteros.io/api
                         
                         $data        = array(
                             "name" => 'irc.devhax.com #fallout memo',
@@ -343,7 +351,7 @@ if (false == in_array($nickc[1], $ban_list)) {
                         
                         $lines = count(file("memo.txt")) - 1;
                         
-                        
+                        $lines = $lines+1;
                         fputs($socket, "PRIVMSG " . $config['chan'] . " :saved on line " . $lines . "\r\n");
                         
                         break;
@@ -445,6 +453,7 @@ if (false == in_array($nickc[1], $ban_list)) {
             fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1]: decimal to hex: " . dechex($args) . "\r\n");
             break;
         //search PHP.net for a function
+        //Ex: .php str_replace
         case ".php":
             fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1]: " . phpHelp($args) . "\r\n");
             break;
@@ -543,7 +552,7 @@ if (false == in_array($nickc[1], $ban_list)) {
                         
                         fputs($socket, "PRIVMSG " . $config['chan'] . " :Latest activity for $user_to_get: $title [URL: $link] @ $time\r\n");
                     } else {
-                        fputs($socket, "PRIVMSG " . $config['chan'] . " :Unable to get latest activity :( \r\n");
+                        fputs($socket, "PRIVMSG " . $config['chan'] . " :Unable to get latest activity, feed not valid :( \r\n");
                     }
                     
                     break;
@@ -561,7 +570,7 @@ if (false == in_array($nickc[1], $ban_list)) {
                         $latest_commit = "$title [commit: $link]";
                         fputs($socket, "PRIVMSG " . $config['chan'] . " :Latest commit: $title [commit: $link]\r\n");
                     } else {
-                        fputs($socket, "PRIVMSG " . $config['chan'] . " :Unable to get latest activity :(( \r\n");
+                        fputs($socket, "PRIVMSG " . $config['chan'] . " :Unable to get latest activity, feed not valid :(( \r\n");
                     }
                     
                     break;
@@ -747,6 +756,7 @@ if (false == in_array($nickc[1], $ban_list)) {
             $link[] = "I could have made money this way, and perhaps amused myself writing code. But I knew that at the end of my career, I would look back on years of building walls to divide people, and feel I had spent my life making the world a worse place.";
             $random = rand(0, count($link) - 1);
             fputs($socket, "PRIVMSG " . $config['chan'] . " :$nickc[1]: " . "$link[$random]\r\n");
+            unset($link);
             break;        
         
         //There needs to a better way to list commands         
@@ -784,7 +794,6 @@ if (false == in_array($nickc[1], $ban_list)) {
             break;
         
         case ".join":
-            //Somehow multi-channel works...
             if ($ex[0] == $config['admin']) {
                 $channel = trim($args);
                 fputs($socket, "JOIN $channel\r\n");
